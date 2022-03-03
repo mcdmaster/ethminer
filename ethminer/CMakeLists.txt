@@ -16,8 +16,7 @@ endif()
 hunter_add_package(CLI11)
 find_package(CLI11 CONFIG REQUIRED)
 
-target_link_libraries(ethminer PRIVATE ethcore poolprotocols devcore ethminer-buildinfo CLI11::CLI11 Boost::system Boost::thread)
-
+target_link_libraries(ethminer PRIVATE ethcore poolprotocols devcore ethminer-buildinfo CLI11::CLI11 Boost::system Boost::thread jsoncpp)
 if(ETHDBUS)
 	find_package(PkgConfig)
 	set( ENV{PKG_CONFIG_PATH} "$ENV{PKG_CONFIG_PATH}:/usr/lib/x86_64-linux-gnu/pkgconfig" )

@@ -14,15 +14,14 @@ cable_configure_toolchain(DEFAULT cxx11)
 set(HUNTER_CONFIGURATION_TYPES Release CACHE STRING "Build type of Hunter packages")
 set(HUNTER_JOBS_NUMBER 6 CACHE STRING "Number of parallel builds used by Hunter")
 HunterGate(
-    URL "https://github.com/ruslo/hunter/archive/v0.23.112.tar.gz"
-    SHA1 "4b894e1d5d203f0cc9a77431dbb1b486ab6f4430"
+    URL https://github.com/cpp-pm/hunter/archive/v0.23.320.tar.gz
+    SHA1 9b4e732afd22f40482c11ad6342f7d336634226f
     LOCAL
 )
 
+cable_set_build_type(DEFAULT Release CONFIGURATION_TYPES Release RelWithDebInfo)
 project(ethminer)
 set(PROJECT_VERSION 0.19.0)
-
-cable_set_build_type(DEFAULT Release CONFIGURATION_TYPES Release RelWithDebInfo)
 
 option(ETHASHCL "Build with OpenCL mining" ON)
 option(ETHASHCUDA "Build with CUDA mining" ON)
