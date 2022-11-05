@@ -22,26 +22,16 @@ set(SOURCES
 	ethash.h
 )
 
-#if(APPLE)
-#	# On macOS use system OpenCL library.
-#	find_package(OpenCL REQUIRED)
-#else()
-#	hunter_add_package(OpenCL)
-#	find_package(OpenCL CONFIG REQUIRED)
-#endif()
+if(APPLE)
+	# On macOS use system OpenCL library.
+	find_package(OpenCL REQUIRED)
+else()
+	hunter_add_package(OpenCL)
+	find_package(OpenCL CONFIG REQUIRED)
+endif()
 
-include_directories(
-PRIVATE
-	..
-	${CMAKE_CURRENT_BINARY_DIR}
-	C:/msys64/ucrt64/include/ssp
-	# C:/msys64/usr/include/json
-	C:/msys64/usr/include/ethash
-	${CUDAToolkit_LIBRARY_DIR}
-	${CODA_CLANG_COMPILER}/../lib
-)
-set(OPENCL_ROOT_DIR ${CUDAToolkit_LIBRARY_DIR})
-find_package(OpenCL REQUIRED)
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(..)
 
 add_library(ethash-cl ${SOURCES})
 target_link_directories(ethash-cl

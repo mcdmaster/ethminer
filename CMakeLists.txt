@@ -35,6 +35,7 @@ option(ETHDBUS "Build with D-Bus support" OFF)
 option(APICORE "Build with API Server support" ON)
 option(BINKERN "Install AMD binary kernels" ON)
 option(DEVBUILD "Log developer metrics" OFF)
+option(USE_SYS_OPENCL "Build with system OpenCL" OFF)
 
 # propagates CMake configuration options to the compiler
 function(configureProject)
@@ -59,6 +60,9 @@ function(configureProject)
     if (DEVBUILD)
         add_definitions(-DDEV_BUILD)
     endif()
+    if (USE_SYS_OPENCL)
+        add_definitions(-DUSE_SYS_OPENCL)
+    endif()
 endfunction()
 
 find_package(PkgConfig)
@@ -72,6 +76,10 @@ find_package(ethash CONFIG REQUIRED)
 
 configureProject()
 
+if(APPLE)
+    set(USE_SYS_OPENCL ON)
+endif()
+
 message("----------------------------------------------------------------------------")
 message("-- CMake ${CMAKE_VERSION}")
 message("-- Build ${CMAKE_BUILD_TYPE} / ${CMAKE_SYSTEM_NAME}")
@@ -83,6 +91,7 @@ message("-- ETHDBUS          Build D-Bus components                       ${ETHD
 message("-- APICORE          Build API Server components                  ${APICORE}")
 message("-- BINKERN          Install AMD binary kernels                   ${BINKERN}")
 message("-- DEVBUILD         Build with dev logging                       ${DEVBUILD}")
+message("-- USE_SYS_OPENCL   Build with system OpenCL                     ${USE_SYS_OPENCL}")
 message("----------------------------------------------------------------------------")
 message("")
 
