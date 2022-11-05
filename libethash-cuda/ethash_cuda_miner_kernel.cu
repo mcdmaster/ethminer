@@ -1,9 +1,8 @@
-#include "ethash_cuda_miner_kernel.h"
-
-#include "ethash_cuda_miner_kernel_globals.h"
+const char program_source[] = R"%%%(
 
 #include "cuda_helper.h"
-
+#include "ethash_cuda_miner_kernel.h"
+#include "ethash_cuda_miner_kernel_globals.h"
 #include "fnv.cuh"
 
 #define copy(dst, src, count)        \
@@ -12,9 +11,12 @@
         (dst)[i] = (src)[i];         \
     }
 
+#include "dagger_shuffled.cuh"
 #include "keccak.cuh"
 
-#include "dagger_shuffled.cuh"
+#define __ASSEMBLER__
+#define __extension__
+#include <stdint.h>
 
 __global__ void ethash_search(volatile Search_results* g_output, uint64_t start_nonce)
 {
@@ -168,3 +170,4 @@ void set_target(uint64_t _target)
 {
     CUDA_SAFE_CALL(cudaMemcpyToSymbol(d_target, &_target, sizeof(uint64_t)));
 }
+)%%%";

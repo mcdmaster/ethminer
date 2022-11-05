@@ -3,13 +3,13 @@
 /// @file
 /// @copyright GNU General Public License
 
+#include "CLMiner.h"
+#include "ethash.h"
+
 #include <boost/dll.hpp>
 
 #include <libethcore/Farm.h>
 #include <ethash/ethash.hpp>
-
-#include "CLMiner.h"
-#include "ethash.h"
 
 using namespace dev;
 using namespace eth;

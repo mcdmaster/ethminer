@@ -1,7 +1,15 @@
-find_package(CUDA REQUIRED)
+find_package(CUDAToolkit REQUIRED)
 
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};--ptxas-options=-v;-use_fast_math)
+set(CUDA_HOST_COMPILER clang-cl)
+set(CUDA_CLANG_COMPILER clang-cl)
 
+# set(VCInstallDir C:/progra~1/micros~2/2022/Preview/VC/)
+# set(VCToolsVersion 14.34.31721)
+# set(Platform x64)
+# set(PlatformTarget x64)
+set(CUDA_NVCC_FLAGS
+	${CUDA_NVCC_FLAGS};--ptxas-options=-v;-use_fast_math;-ccbin;${CUDA_HOST_COMPILER};-Xcompiler;"/D \"-static\" /EHsc /W3 /nologo /O2 /Zi /MT";-forward-unknown-to-host-compiler
+)
 if (NOT MSVC)
 	list(APPEND CUDA_NVCC_FLAGS "--disable-warnings")
 endif()
@@ -12,7 +20,7 @@ list(APPEND CUDA_NVCC_FLAGS_DEBUG -G)
 if(COMPUTE AND (COMPUTE GREATER 0))
 	list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_${COMPUTE},code=sm_${COMPUTE}")
 else()
-	list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_30,code=sm_30")
+	# list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_30,code=sm_30")
 	list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_35,code=sm_35")
 	list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_50,code=sm_50")
 	list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_52,code=sm_52")
@@ -31,7 +39,35 @@ endif()
 file(GLOB sources "*.cpp" "*.cu")
 file(GLOB headers "*.h" "*.cuh")
 
-cuda_add_library(ethash-cuda STATIC ${sources} ${headers})
-target_link_libraries(ethash-cuda ethcore ethash::ethash Boost::thread)
-target_include_directories(ethash-cuda PUBLIC ${CUDA_INCLUDE_DIRS})
-target_include_directories(ethash-cuda PRIVATE .. ${CMAKE_CURRENT_BINARY_DIR})
+add_library(ethash-cuda STATIC ${sources} ${headers})
+
+target_link_libraries(ethash-cuda
+PUBLIC
+	cudart_static
+	nvrtc_static
+	nvrtc-builtins_static
+PRIVATE
+	ethcore
+	Threads::Threads
+	# C:/msys64/usr/lib/libjsoncpp.a
+	OpenSSL::SSL
+	OpenSSL::Crypto
+PRIVATE
+	OpenCL::OpenCL
+	Threads::Threads
+	Boost::filesystem
+)
+target_link_directories(ethash-cuda
+PUBLIC
+	${CUDAToolkit_LIBRARY_DIR}
+	${CODA_CLANG_COMPILER}/../lib
+)
+target_include_directories(ethash-cuda
+PUBLIC
+	${CUDAToolkit_INCLUDE_DIRS}
+PRIVATE
+	..
+	${CMAKE_CURRENT_BINARY_DIR}
+	# C:/msys64/usr/include/json
+	C:/msys64/usr/include/ethash
+)

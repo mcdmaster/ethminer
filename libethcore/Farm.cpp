@@ -30,6 +30,10 @@
 #include <libethash-cpu/CPUMiner.h>
 #endif
 
+#include <boost/filesystem.hpp>
+
+namespace fs = boost::filesystem;
+
 namespace dev
 {
 namespace eth
@@ -205,13 +209,13 @@ void Farm::setWork(WorkPackage const& _newWp)
     // Retrieve appropriate EpochContext
     if (m_currentWp.epoch != _newWp.epoch)
     {
-        ethash::epoch_context _ec = ethash::get_global_epoch_context(_newWp.epoch);
+        ethash::epoch_context_ptr _ec = ethash::create_epoch_context(_newWp.epoch);
         m_currentEc.epochNumber = _newWp.epoch;
-        m_currentEc.lightNumItems = _ec.light_cache_num_items;
-        m_currentEc.lightSize = ethash::get_light_cache_size(_ec.light_cache_num_items);
-        m_currentEc.dagNumItems = _ec.full_dataset_num_items;
-        m_currentEc.dagSize = ethash::get_full_dataset_size(_ec.full_dataset_num_items);
-        m_currentEc.lightCache = _ec.light_cache;
+        m_currentEc.lightNumItems = _ec->light_cache_num_items;
+        m_currentEc.lightSize = ethash::get_light_cache_size(_ec->light_cache_num_items);
+        m_currentEc.dagNumItems = _ec->full_dataset_num_items;
+        m_currentEc.dagSize = ethash::get_full_dataset_size(_ec->full_dataset_num_items);
+        m_currentEc.lightCache = _ec->light_cache;
 
         for (auto const& miner : m_miners)
             miner->setEpoch(m_currentEc);
@@ -382,7 +386,7 @@ void Farm::restart()
  */
 void Farm::restart_async()
 {
-    m_io_strand.get_io_service().post(m_io_strand.wrap(boost::bind(&Farm::restart, this)));
+    m_io_strand.post(m_io_strand.wrap(boost::bind(&Farm::restart, this)));
 }
 
 /**
@@ -467,9 +471,9 @@ SolutionAccountType Farm::getSolutions(unsigned _minerIdx)
  * @brief Provides the description of segments each miner is working on
  * @return a JsonObject
  */
-Json::Value Farm::get_nonce_scrambler_json()
+boost::json::value Farm::get_nonce_scrambler_json()
 {
-    Json::Value jRes;
+    boost::json::value jRes[char* index];
     jRes["start_nonce"] = toHex(m_nonce_scrambler, HexPrefix::Add);
     jRes["device_width"] = m_nonce_segment_with;
     jRes["device_count"] = (uint64_t)m_miners.size();
@@ -654,16 +658,16 @@ void Farm::collectData(const boost::system::error_code& ec)
 
 bool Farm::spawn_file_in_bin_dir(const char* filename, const std::vector<std::string>& args)
 {
-    std::string fn = boost::dll::program_location().parent_path().string() +
-                     "/" +  // boost::filesystem::path::preferred_separator
-                     filename;
+    auto fn = fs::path(
+        boost::dll::program_location().parent_path().string() + "/" + filename
+    );
     try
     {
-        if (!boost::filesystem::exists(fn))
+        if (!fs::exists(fn))
             return false;
 
         /* anything in the file */
-        if (!boost::filesystem::file_size(fn))
+        if (!fs::file_size(fn))
             return false;
 
 #if defined(__linux)

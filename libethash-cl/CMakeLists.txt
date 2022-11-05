@@ -3,6 +3,7 @@
 # a rebuild of libethash-cl should be triggered
 
 #TODO: clean up the copy&pasting here
+
 add_custom_command(
 	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ethash.h
 	COMMAND ${CMAKE_COMMAND} ARGS
@@ -16,22 +17,47 @@ add_custom_command(
 add_custom_target(clbin2h_stable DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/ethash.h ${CMAKE_CURRENT_SOURCE_DIR}/cl/ethash.cl)
 
 set(SOURCES
-	CLMiner.h CLMiner.cpp
-	${CMAKE_CURRENT_BINARY_DIR}/ethash.h
+	CLMiner.h
+	CLMiner.cpp
+	ethash.h
 )
 
-if(APPLE)
-	# On macOS use system OpenCL library.
-	find_package(OpenCL REQUIRED)
-else()
-	hunter_add_package(OpenCL)
-	find_package(OpenCL CONFIG REQUIRED)
-endif()
+#if(APPLE)
+#	# On macOS use system OpenCL library.
+#	find_package(OpenCL REQUIRED)
+#else()
+#	hunter_add_package(OpenCL)
+#	find_package(OpenCL CONFIG REQUIRED)
+#endif()
 
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-include_directories(..)
+include_directories(
+PRIVATE
+	..
+	${CMAKE_CURRENT_BINARY_DIR}
+	C:/msys64/ucrt64/include/ssp
+	# C:/msys64/usr/include/json
+	C:/msys64/usr/include/ethash
+	${CUDAToolkit_LIBRARY_DIR}
+	${CODA_CLANG_COMPILER}/../lib
+)
+set(OPENCL_ROOT_DIR ${CUDAToolkit_LIBRARY_DIR})
+find_package(OpenCL REQUIRED)
 
 add_library(ethash-cl ${SOURCES})
-target_link_libraries(ethash-cl PUBLIC ethcore ethash::ethash)
-target_link_libraries(ethash-cl PRIVATE OpenCL::OpenCL)
-target_link_libraries(ethash-cl PRIVATE Boost::filesystem Boost::thread)
+target_link_directories(ethash-cl
+PRIVATE
+	${BOOST_ROOT}/lib
+)
+target_link_libraries(ethash-cl 
+PUBLIC 
+	ethcore
+	# C:/msys64/usr/lib/libjsoncpp.a
+	ethash::ethash 
+	ethash::ethash-global-context 
+	OpenSSL::SSL
+	OpenSSL::Crypto
+PRIVATE
+	OpenCL::OpenCL
+	Threads::Threads
+	Boost::filesystem
+)

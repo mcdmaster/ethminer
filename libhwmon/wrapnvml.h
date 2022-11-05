@@ -17,6 +17,7 @@
 #pragma once
 
 #include "wraphelper.h"
+#include <boost/filesystem.hpp>
 
 #if defined(__cplusplus)
 extern "C" {

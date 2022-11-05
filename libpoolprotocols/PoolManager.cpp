@@ -353,17 +353,17 @@ std::shared_ptr<URI> PoolManager::getActiveConnection()
     }
 }
 
-Json::Value PoolManager::getConnectionsJson()
+boost::json::value PoolManager::getConnectionsJson()
 {
     // Returns the list of configured connections
-    Json::Value jRes;
+    boost::json::value jRes;
     for (size_t i = 0; i < m_Settings.connections.size(); i++)
     {
-        Json::Value JConn;
+        boost::json::value JConn<T **argv> = &T[];
         JConn["index"] = (unsigned)i;
         JConn["active"] = (i == m_activeConnectionIdx ? true : false);
         JConn["uri"] = m_Settings.connections[i]->str();
-        jRes.append(JConn);
+        JConn.emplace_array();
     }
     return jRes;
 }

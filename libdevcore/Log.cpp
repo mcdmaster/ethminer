@@ -18,11 +18,7 @@
 #include "Log.h"
 
 #include <map>
-#include <thread>
-
-#ifdef __APPLE__
-#include <pthread.h>
-#endif
+#include <boost/thread.hpp>
 
 #include "Guards.h"
 

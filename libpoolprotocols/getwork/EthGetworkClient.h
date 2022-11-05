@@ -1,5 +1,12 @@
 #pragma once
 
+#ifndef _GCC_LIMITS_H_
+#define _GCC_LIMITS_H_
+#endif
+#include <limits.h>
+
+#include "../PoolClient.h"
+
 #include <iostream>
 #include <string>
 
@@ -7,10 +14,7 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/lockfree/queue.hpp>
-
-#include <json/json.h>
-
-#include "../PoolClient.h"
+#include <boost/json.hpp>
 
 using namespace std;
 using namespace dev;
@@ -37,9 +41,9 @@ private:
     void handle_connect(const boost::system::error_code& ec);
     void handle_write(const boost::system::error_code& ec);
     void handle_read(const boost::system::error_code& ec, std::size_t bytes_transferred);
-    std::string processError(Json::Value& JRes);
-    void processResponse(Json::Value& JRes);
-    void send(Json::Value const& jReq);
+    std::string processError(boost::json::value& JRes);
+    void processResponse(boost::json::value& JRes);
+    void send(boost::json::value const& jReq);
     void send(std::string const& sReq);
     void getwork_timer_elapsed(const boost::system::error_code& ec);
 
@@ -57,9 +61,9 @@ private:
 
     boost::asio::streambuf m_request;
     boost::asio::streambuf m_response;
-    Json::StreamWriterBuilder m_jSwBuilder;
+    boost::json::serializer m_jSwBuilder;
     std::string m_jsonGetWork;
-    Json::Value m_pendingJReq;
+    boost::json::value m_pendingJReq;
     std::chrono::time_point<std::chrono::steady_clock> m_pending_tstamp;
 
     boost::asio::deadline_timer m_getwork_timer;  // The timer which triggers getWork requests

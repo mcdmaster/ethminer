@@ -22,12 +22,11 @@
 #include <thread>
 
 #include <boost/asio.hpp>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/dll.hpp>
-#include <boost/filesystem.hpp>
 #include <boost/process.hpp>
-
-#include <json/json.h>
+#include <boost/filesystem.hpp>
+#include <boost/json.hpp>
 
 #include <libdevcore/Common.h>
 #include <libdevcore/Worker.h>
@@ -227,7 +226,7 @@ public:
      * @brief Provides the description of segments each miner is working on
      * @return a JsonObject
      */
-    Json::Value get_nonce_scrambler_json();
+    boost::json::value get_nonce_scrambler_json();
 
     void setTStartTStop(unsigned tstart, unsigned tstop);
 

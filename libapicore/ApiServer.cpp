@@ -1,8 +1,9 @@
 #include "ApiServer.h"
+#include <libethcore/Farm.h>
 
 #include <ethminer/buildinfo.h>
-
-#include <libethcore/Farm.h>
+#include <boost/filesystem.hpp>
+#include <boost/json.hpp>
 
 #ifndef HOST_NAME_MAX
 #define HOST_NAME_MAX 255
@@ -15,12 +16,11 @@
 #define HTTP_ROW1_COLOR "#ffffff"
 #define HTTP_ROWRED_COLOR "#f46542"
 
-
 /* helper functions getting values from a JSON request */
-static bool getRequestValue(const char* membername, bool& refValue, Json::Value& jRequest,
-    bool optional, Json::Value& jResponse)
+static bool getRequestValue(const char* membername, bool& refValue, boost::json::value& jRequest,
+    bool optional, boost::json::value& jResponse)
 {
-    if (!jRequest.isMember(membername))
+    if (!jRequest["membername"])
     {
         if (!optional)
         {
@@ -48,10 +48,10 @@ static bool getRequestValue(const char* membername, bool& refValue, Json::Value&
     return true;
 }
 
-static bool getRequestValue(const char* membername, unsigned& refValue, Json::Value& jRequest,
-    bool optional, Json::Value& jResponse)
+static bool getRequestValue(const char* membername, unsigned& refValue, boost::json::value& jRequest,
+    bool optional, boost::json::value& jResponse)
 {
-    if (!jRequest.isMember(membername))
+    if (!jRequest[membername])
     {
         if (!optional)
         {
@@ -79,10 +79,10 @@ static bool getRequestValue(const char* membername, unsigned& refValue, Json::Va
     return true;
 }
 
-static bool getRequestValue(const char* membername, uint64_t& refValue, Json::Value& jRequest,
-    bool optional, Json::Value& jResponse)
+static bool getRequestValue(const char* membername, uint64_t& refValue, boost::json::value& jRequest,
+    bool optional, boost::json::value& jResponse)
 {
-    if (!jRequest.isMember(membername))
+    if (!jRequest[membername])
     {
         if (!optional)
         {
@@ -114,10 +114,10 @@ static bool getRequestValue(const char* membername, uint64_t& refValue, Json::Va
     return true;
 }
 
-static bool getRequestValue(const char* membername, Json::Value& refValue, Json::Value& jRequest,
-    bool optional, Json::Value& jResponse)
+static bool getRequestValue(const char* membername, boost::json::value& refValue, boost::json::value& jRequest,
+    bool optional, boost::json::value& jResponse)
 {
-    if (!jRequest.isMember(membername))
+    if (!jRequest[membername])
     {
         if (!optional)
         {
@@ -145,10 +145,10 @@ static bool getRequestValue(const char* membername, Json::Value& refValue, Json:
     return true;
 }
 
-static bool getRequestValue(const char* membername, std::string& refValue, Json::Value& jRequest,
-    bool optional, Json::Value& jResponse)
+static bool getRequestValue(const char* membername, std::string& refValue, boost::json::value& jRequest,
+    bool optional, boost::json::value& jResponse)
 {
-    if (!jRequest.isMember(membername))
+    if (!jRequest[membername])
     {
         if (!optional)
         {
@@ -176,7 +176,7 @@ static bool getRequestValue(const char* membername, std::string& refValue, Json:
     return true;
 }
 
-static bool checkApiWriteAccess(bool is_read_only, Json::Value& jResponse)
+static bool checkApiWriteAccess(bool is_read_only, boost::json::value& jResponse)
 {
     if (is_read_only)
     {
@@ -186,16 +186,16 @@ static bool checkApiWriteAccess(bool is_read_only, Json::Value& jResponse)
     return !is_read_only;
 }
 
-static bool parseRequestId(Json::Value& jRequest, Json::Value& jResponse)
+static bool parseRequestId(boost::json::value& jRequest, boost::json::value& jResponse)
 {
     const char* membername = "id";
 
     // NOTE: all errors have the same code (-32600) indicating this is an invalid request
 
     // be sure id is there and it's not empty, otherwise raise an error
-    if (!jRequest.isMember(membername) || jRequest[membername].empty())
+    if (!jRequest[membername] || jRequest[membername].empty())
     {
-        jResponse[membername] = Json::nullValue;
+        jResponse[membername] = boost::json::get_null_resource();
         jResponse["error"]["code"] = -32600;
         jResponse["error"]["message"] = "Invalid Request (missing or empty id)";
         return false;
@@ -216,7 +216,7 @@ static bool parseRequestId(Json::Value& jRequest, Json::Value& jResponse)
     }
 
     // id has invalid type
-    jResponse[membername] = Json::nullValue;
+    jResponse[membername] = boost::json::get_null_resource();
     jResponse["error"]["code"] = -32600;
     jResponse["error"]["message"] = "Invalid Request (id has invalid type)";
     return false;
@@ -358,7 +358,7 @@ ApiConnection::ApiConnection(
     m_readonly(readonly),
     m_password(std::move(password))
 {
-    m_jSwBuilder.settings_["indentation"] = "";
+    m_jSwBuilder.read["indentation"] = "";
     if (!m_password.empty())
         m_is_authenticated = false;
 }
@@ -369,7 +369,7 @@ void ApiConnection::start()
     recvSocketData();
 }
 
-void ApiConnection::processRequest(Json::Value& jRequest, Json::Value& jResponse)
+void ApiConnection::processRequest(boost::json::value& jRequest, boost::json::value& jResponse)
 {
     jResponse["jsonrpc"] = "2.0";
 
@@ -401,7 +401,7 @@ void ApiConnection::processRequest(Json::Value& jRequest, Json::Value& jResponse
         m_is_authenticated =
             false; /* we allow api_authorize method even if already authenticated */
 
-        Json::Value jRequestParams;
+        boost::json::value jRequestParams;
         if (!getRequestValue("params", jRequestParams, jRequest, false, jResponse))
             return;
 
@@ -502,7 +502,7 @@ void ApiConnection::processRequest(Json::Value& jRequest, Json::Value& jResponse
         if (!checkApiWriteAccess(m_readonly, jResponse))
             return;
 
-        Json::Value jRequestParams;
+        boost::json::value jRequestParams;
         if (!getRequestValue("params", jRequestParams, jRequest, false, jResponse))
             return;
 
@@ -528,10 +528,10 @@ void ApiConnection::processRequest(Json::Value& jRequest, Json::Value& jResponse
         if (!checkApiWriteAccess(m_readonly, jResponse))
             return;
 
-        Json::Value jRequestParams;
+        boost::json::value jRequestParams;
         if (!getRequestValue("params", jRequestParams, jRequest, false, jResponse))
             return;
-        if (jRequestParams.isMember("index"))
+        if (jRequestParams["index"])
         {
             unsigned index;
             if (getRequestValue("index", index, jRequestParams, false, jResponse))
@@ -587,7 +587,7 @@ void ApiConnection::processRequest(Json::Value& jRequest, Json::Value& jResponse
         if (!checkApiWriteAccess(m_readonly, jResponse))
             return;
 
-        Json::Value jRequestParams;
+        boost::json::value jRequestParams;
         if (!getRequestValue("params", jRequestParams, jRequest, false, jResponse))
             return;
 
@@ -619,7 +619,7 @@ void ApiConnection::processRequest(Json::Value& jRequest, Json::Value& jResponse
         if (!checkApiWriteAccess(m_readonly, jResponse))
             return;
 
-        Json::Value jRequestParams;
+        boost::json::value jRequestParams;
         if (!getRequestValue("params", jRequestParams, jRequest, false, jResponse))
             return;
 
@@ -627,7 +627,7 @@ void ApiConnection::processRequest(Json::Value& jRequest, Json::Value& jResponse
         uint64_t nonce = Farm::f().get_nonce_scrambler();
         unsigned exp = Farm::f().get_segment_width();
 
-        if (jRequestParams.isMember("noncescrambler"))
+        if (jRequestParams["noncescrambler"])
         {
             string nonceHex;
 
@@ -655,7 +655,7 @@ void ApiConnection::processRequest(Json::Value& jRequest, Json::Value& jResponse
             }
         }
 
-        if (jRequestParams.isMember("segmentwidth"))
+        if (jRequestParams["segmentwidth"])
         {
             any_value_provided = true;
             if (!getRequestValue("segmentwidth", exp, jRequestParams, false, jResponse))
@@ -683,7 +683,7 @@ void ApiConnection::processRequest(Json::Value& jRequest, Json::Value& jResponse
         if (!checkApiWriteAccess(m_readonly, jResponse))
             return;
 
-        Json::Value jRequestParams;
+        boost::json::value jRequestParams;
         if (!getRequestValue("params", jRequestParams, jRequest, false, jResponse))
             return;
 
@@ -718,7 +718,7 @@ void ApiConnection::processRequest(Json::Value& jRequest, Json::Value& jResponse
         if (!checkApiWriteAccess(m_readonly, jResponse))
             return;
 
-        Json::Value jRequestParams;
+        boost::json::value jRequestParams;
         if (!getRequestValue("params", jRequestParams, jRequest, false, jResponse))
             return;
 
@@ -878,9 +878,9 @@ void ApiConnection::onRecvSocketDataCompleted(
                     if (!line.empty())
                     {
                         // Test validity of chunk and process
-                        Json::Value jMsg;
-                        Json::Value jRes;
-                        Json::Reader jRdr;
+                        boost::json::value jMsg;
+                        boost::json::value jRes;
+                        boost::json::parser jRdr;
                         if (jRdr.parse(line, jMsg))
                         {
                             try
@@ -890,18 +890,18 @@ void ApiConnection::onRecvSocketDataCompleted(
                             }
                             catch (const std::exception& _ex)
                             {
-                                jRes = Json::Value();
+                                jRes = boost::json::value();
                                 jRes["jsonrpc"] = "2.0";
-                                jRes["id"] = Json::Value::null;
+                                jRes["id"] = boost::json::value::null;
                                 jRes["error"]["errorcode"] = "500";
                                 jRes["error"]["message"] = _ex.what();
                             }
                         }
                         else
                         {
-                            jRes = Json::Value();
+                            jRes = boost::json::value();
                             jRes["jsonrpc"] = "2.0";
-                            jRes["id"] = Json::Value::null;
+                            jRes["id"] = boost::json::value::null;
                             jRes["error"]["errorcode"] = "-32700";
                             string what = jRdr.getFormattedErrorMessages();
                             boost::replace_all(what, "\n", " ");
@@ -930,12 +930,12 @@ void ApiConnection::onRecvSocketDataCompleted(
     }
 }
 
-void ApiConnection::sendSocketData(Json::Value const& jReq, bool _disconnect)
+void ApiConnection::sendSocketData(boost::json::value const& jReq, bool _disconnect)
 {
     if (!m_socket.is_open())
         return;
     std::stringstream line;
-    line << Json::writeString(m_jSwBuilder, jReq) << std::endl;
+    line << boost::json::write_string(m_jSwBuilder, jReq) << std::endl;
     sendSocketData(line.str(), _disconnect);
 }
 
@@ -957,7 +957,7 @@ void ApiConnection::onSendSocketDataCompleted(const boost::system::error_code& e
         disconnect();
 }
 
-Json::Value ApiConnection::getMinerStat1()
+boost::json::value ApiConnection::getMinerStat1()
 {
     auto connection = PoolManager::p().getActiveConnection();
     TelemetryType t = Farm::f().Telemetry();
@@ -999,7 +999,7 @@ Json::Value ApiConnection::getMinerStat1()
                     << (((numGpus - 1) > gpuIndex) ? ";" : "");  // Fetching Temp and Fans
     }
 
-    Json::Value jRes;
+    boost::json::value jRes;
 
     jRes[0] = ethminer_get_buildinfo()->project_name_with_version;  // miner version.
     jRes[1] = toString(runningTime.count());                        // running time, in minutes.
@@ -1018,13 +1018,13 @@ Json::Value ApiConnection::getMinerStat1()
     return jRes;
 }
 
-Json::Value ApiConnection::getMinerStatDetailPerMiner(
+boost::json::value ApiConnection::getMinerStatDetailPerMiner(
     const TelemetryType& _t, std::shared_ptr<Miner> _miner)
 {
     unsigned _index = _miner->Index();
     std::chrono::steady_clock::time_point _now = std::chrono::steady_clock::now();
 
-    Json::Value jRes;
+    boost::json::value jRes;
     DeviceDescriptor minerDescriptor = _miner->getDescriptor();
 
     jRes["_index"] = _index;
@@ -1032,7 +1032,7 @@ Json::Value ApiConnection::getMinerStatDetailPerMiner(
         (minerDescriptor.subscriptionType == DeviceSubscriptionTypeEnum::Cuda ? "CUDA" : "OpenCL");
 
     /* Hardware Info */
-    Json::Value hwinfo;
+    boost::json::value hwinfo;
     hwinfo["pci"] = minerDescriptor.uniqueId;
     hwinfo["type"] =
         (minerDescriptor.type == DeviceTypeEnum::Gpu ?
@@ -1044,7 +1044,7 @@ Json::Value ApiConnection::getMinerStatDetailPerMiner(
     hwinfo["name"] = ss.str();
 
     /* Hardware Sensors*/
-    Json::Value sensors = Json::Value(Json::arrayValue);
+    boost::json::value sensors = boost::json::value(boost::json::arrayValue);
 
     sensors.append(_t.miners.at(_index).sensors.tempC);
     sensors.append(_t.miners.at(_index).sensors.fanP);
@@ -1053,9 +1053,9 @@ Json::Value ApiConnection::getMinerStatDetailPerMiner(
     hwinfo["sensors"] = sensors;
 
     /* Mining Info */
-    Json::Value mininginfo;
-    Json::Value jshares = Json::Value(Json::arrayValue);
-    Json::Value jsegment = Json::Value(Json::arrayValue);
+    boost::json::value mininginfo;
+    boost::json::value jshares = boost::json::value(boost::json::arrayValue);
+    boost::json::value jsegment = boost::json::value(boost::json::arrayValue);
     jshares.append(_t.miners.at(_index).solutions.accepted);
     jshares.append(_t.miners.at(_index).solutions.rejected);
     jshares.append(_t.miners.at(_index).solutions.failed);
@@ -1067,7 +1067,8 @@ Json::Value ApiConnection::getMinerStatDetailPerMiner(
 
     mininginfo["shares"] = jshares;
     mininginfo["paused"] = _miner->paused();
-    mininginfo["pause_reason"] = _miner->paused() ? _miner->pausedString() : Json::Value::null;
+    mininginfo["pause_reason"] =
+        _miner->paused() ? _miner->pausedString() : boost::json::get_null_resource();
 
     /* Nonce infos */
     auto segment_width = Farm::f().get_segment_width();
@@ -1087,7 +1088,7 @@ Json::Value ApiConnection::getMinerStatDetailPerMiner(
 
 std::string ApiConnection::getHttpMinerStatDetail()
 {
-    Json::Value jStat = getMinerStatDetail();
+    boost::json::value jStat = getMinerStatDetail();
     uint64_t durationSeconds = jStat["host"]["runtime"].asUInt64();
     int hours = (int)(durationSeconds / 3600);
     durationSeconds -= (hours * 3600);
@@ -1145,9 +1146,9 @@ std::string ApiConnection::getHttpMinerStatDetail()
     double total_power = 0;
     unsigned int total_solutions = 0;
 
-    for (Json::Value::ArrayIndex i = 0; i != jStat["devices"].size(); i++)
+    for (int i = 0; i != jStat["devices"].size(); i++)
     {
-        Json::Value device = jStat["devices"][i];
+        boost::json::value device = jStat["devices"][i];
         double hashrate = std::stoul(device["mining"]["hashrate"].asString(), nullptr, 16);
         double power = device["hardware"]["sensors"][2].asDouble();
         unsigned int solutions = device["mining"]["shares"][0].asUInt();
@@ -1196,7 +1197,7 @@ std::string ApiConnection::getHttpMinerStatDetail()
  *    https://github.com/ethereum-mining/ethminer/pull/1232#discussion_r193995891
  * @return The json result
  */
-Json::Value ApiConnection::getMinerStatDetail()
+boost::json::value ApiConnection::getMinerStatDetail()
 {
     const std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
     TelemetryType t = Farm::f().Telemetry();
@@ -1205,11 +1206,11 @@ Json::Value ApiConnection::getMinerStatDetail()
         std::chrono::steady_clock::now() - t.start);
 
     // ostringstream version;
-    Json::Value devices = Json::Value(Json::arrayValue);
-    Json::Value jRes;
+    boost::json::value devices = boost::json::value(boost::json::arrayValue);
+    boost::json::value jRes;
 
     /* Host Info */
-    Json::Value hostinfo;
+    boost::json::value hostinfo;
     hostinfo["version"] = ethminer_get_buildinfo()->project_name_with_version;  // miner version.
     hostinfo["runtime"] = uint64_t(runningTime.count());  // running time, in seconds.
 
@@ -1219,49 +1220,50 @@ Json::Value ApiConnection::getMinerStatDetail()
         if (!gethostname(hostName, HOST_NAME_MAX + 1))
             hostinfo["name"] = hostName;
         else
-            hostinfo["name"] = Json::Value::null;
+            hostinfo["name"] = boost::json::value::null;
     }
 
 
     /* Connection info */
-    Json::Value connectioninfo;
+    boost::json::value connectioninfo;
     auto connection = PoolManager::p().getActiveConnection();
     connectioninfo["uri"] = connection->str();
     connectioninfo["connected"] = PoolManager::p().isConnected();
     connectioninfo["switches"] = PoolManager::p().getConnectionSwitches();
 
     /* Mining Info */
-    Json::Value mininginfo;
-    Json::Value sharesinfo = Json::Value(Json::arrayValue);
+    boost::json::value mininginfo;
+    boost::json::value sharesinfo = boost::json::value(boost::json::arrayValue);
 
     mininginfo["hashrate"] = toHex(uint32_t(t.farm.hashrate), HexPrefix::Add);
     mininginfo["epoch"] = PoolManager::p().getCurrentEpoch();
     mininginfo["epoch_changes"] = PoolManager::p().getEpochChanges();
     mininginfo["difficulty"] = PoolManager::p().getCurrentDifficulty();
 
-    sharesinfo.append(t.farm.solutions.accepted);
-    sharesinfo.append(t.farm.solutions.rejected);
-    sharesinfo.append(t.farm.solutions.failed);
+    sharesinfo.emplace_bool(t.farm.solutions.accepted);
+    sharesinfo.emplace_bool(t.farm.solutions.rejected);
+    sharesinfo.emplace_bool(t.farm.solutions.failed);
     auto solution_lastupdated =
         std::chrono::duration_cast<std::chrono::seconds>(now - t.farm.solutions.tstamp);
-    sharesinfo.append(uint64_t(solution_lastupdated.count()));  // interval in seconds from last
+    sharesinfo.emplace_object(uint64_t(solution_lastupdated.count()));  // interval in seconds from last
                                                                 // found share
     mininginfo["shares"] = sharesinfo;
 
     /* Monitors Info */
-    Json::Value monitorinfo;
+    boost::json::value monitorinfo;
     auto tstop = Farm::f().get_tstop();
     if (tstop)
     {
-        Json::Value tempsinfo = Json::Value(Json::arrayValue);
-        tempsinfo.append(Farm::f().get_tstart());
-        tempsinfo.append(tstop);
+        auto *tempsinfo = &boost::json::value(boost::json::array_kind);
+        (boost::json::array&)tempsinfo = Farm::f().get_tstart();
+        tempsinfo++;
+        (boost::json::array&)tempsinfo = tstop;
         monitorinfo["temperatures"] = tempsinfo;
     }
 
     /* Devices related info */
     for (shared_ptr<Miner> miner : Farm::f().getMiners())
-        devices.append(getMinerStatDetailPerMiner(t, miner));
+        devices.(getMinerStatDetailPerMiner(t, miner));
 
     jRes["devices"] = devices;
 

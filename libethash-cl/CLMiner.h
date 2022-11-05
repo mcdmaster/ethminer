@@ -5,6 +5,10 @@
 
 #pragma once
 
+#ifndef _GCC_LIMITS_H_
+#define _GCC_LIMITS_H_
+#endif
+#include <limits.h>
 #include <fstream>
 
 #include <libdevcore/Worker.h>
@@ -13,6 +17,10 @@
 
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/lexical_cast.hpp>
+
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
 
 #pragma GCC diagnostic push
 #if __GNUC__ >= 6

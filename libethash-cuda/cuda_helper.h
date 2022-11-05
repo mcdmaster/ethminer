@@ -1,8 +1,8 @@
 #pragma once
 
 #include <cuda.h>
-
 #include <cuda_runtime.h>
+#include <nvrtc.h>
 
 #define DEV_INLINE __device__ __forceinline__
 
