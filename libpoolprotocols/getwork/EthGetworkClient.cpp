@@ -20,14 +20,14 @@ EthGetworkClient::EthGetworkClient(int worktimeout, unsigned farmRecheckPeriod)
     m_getwork_timer(g_io_service),
     m_worktimeout(worktimeout)
 {
-    m_jSwBuilder.settings_["indentation"] = "";
+    m_jSwBuilder.reset((const boost::json::string*)"indentation");
 
-    Json::Value jGetWork;
-    jGetWork["id"] = unsigned(1);
-    jGetWork["jsonrpc"] = "2.0";
-    jGetWork["method"] = "eth_getWork";
-    jGetWork["params"] = Json::Value(Json::arrayValue);
-    m_jsonGetWork = std::string(Json::writeString(m_jSwBuilder, jGetWork));
+    boost::json::value jGetWork;
+    [jGetWork](char*, unsigned) { return "id", 0U; };
+    [jGetWork](char*, std::string) { return "jsonrpc", "2.0"; };
+    [jGetWork](char*, std::string) { return "method", "eth_getWork"; };
+    [jGetWork](char*, boost::json::value) { return "params", boost::json::array(); };
+    m_jsonGetWork = (string)m_jSwBuilder.read((char*)&jGetWork, sizeof jGetWork);
 }
 
 EthGetworkClient::~EthGetworkClient()
@@ -136,7 +136,7 @@ void EthGetworkClient::handle_connect(const boost::system::error_code& ec)
         // Retrieve 1st line waiting in the queue and submit
         // if other lines waiting they will be processed 
         // at the end of the processed request
-        Json::Reader jRdr;
+        boost::json::stream_parser jRdr;
         std::string* line;
         std::ostream os(&m_request);
         if (!m_txQueue.empty())
@@ -146,7 +146,7 @@ void EthGetworkClient::handle_connect(const boost::system::error_code& ec)
                 if (line->size())
                 {
 
-                    jRdr.parse(*line, m_pendingJReq);
+                    jRdr.write_some((const char *)&m_pendingJReq, line->size());
                     m_pending_tstamp = std::chrono::steady_clock::now();
 
                     // Make sure path begins with "/"
@@ -304,16 +304,18 @@ void EthGetworkClient::handle_read(
                     cnote << " << " << line;
 
                 // Test validity of chunk and process
-                Json::Value jRes;
-                Json::Reader jRdr;
-                if (jRdr.parse(line, jRes))
+                boost::json::value jRes;
+                boost::json::stream_parser jRdr;
+                boost::json::error_code ec;
+                if (jRdr.write_some(jRes.get_string().c_str(), (size_t)line.size()))
                 {
                     // Run in sync so no 2 different async reads may overlap
                     processResponse(jRes);
                 }
                 else
                 {
-                    string what = jRdr.getFormattedErrorMessages();
+                    jRdr.finish(ec);
+                    string what = ec.message();
                     boost::replace_all(what, "\n", " ");
                     cwarn << "Got invalid Json message : " << what;
                 }
@@ -370,13 +372,13 @@ void EthGetworkClient::handle_resolve(
     }
 }
 
-void EthGetworkClient::processResponse(Json::Value& JRes) 
+void EthGetworkClient::processResponse(boost::json::value& JRes) 
 {
     unsigned _id = 0;  // This SHOULD be the same id as the request it is responding to 
     bool _isSuccess = false;  // Whether or not this is a succesful or failed response
     string _errReason = "";   // Content of the error reason
 
-    if (!JRes.isMember("id"))
+    if (!JRes.at("id").get_uint64())
     {
         cwarn << "Missing id member in response from " << m_conn->Host() << ":"
               << toString(m_conn->Port());
@@ -385,8 +387,8 @@ void EthGetworkClient::processResponse(Json::Value& JRes)
     // We get the id from pending jrequest
     // It's not guaranteed we get response labelled with same id
     // For instance Dwarfpool always responds with "id":0
-    _id = m_pendingJReq.get("id", unsigned(0)).asUInt();
-    _isSuccess = JRes.get("error", Json::Value::null).empty();
+    _id = m_pendingJReq.at("id").get_uint64();
+    _isSuccess = JRes.at("error").is_null();
     _errReason = (_isSuccess ? "" : processError(JRes));
 
     // We have only theese possible ids
@@ -412,19 +414,20 @@ void EthGetworkClient::processResponse(Json::Value& JRes)
         }
         else
         {
-            if (!JRes.isMember("result"))
+            if (!JRes.at("result").is_null())
             {
                 cwarn << "Missing data for eth_getWork request from " << m_conn->Host() << ":"
                       << toString(m_conn->Port());
             }
             else
             {
-                Json::Value JPrm = JRes.get("result", Json::Value::null);
+                boost::json::value JPrm = JRes.at("result").get_array();
                 WorkPackage newWp;
                 
-                newWp.header = h256(JPrm.get(Json::Value::ArrayIndex(0), "").asString());
-                newWp.seed = h256(JPrm.get(Json::Value::ArrayIndex(1), "").asString());
-                newWp.boundary = h256(JPrm.get(Json::Value::ArrayIndex(2), "").asString());
+                boost::json::array stringarray = JPrm.as_array();
+                newWp.header = h256((string&)stringarray[0].emplace_string());
+                newWp.seed = h256((string&)stringarray[1].emplace_string());
+                newWp.boundary = h256((string&)stringarray[2].emplace_string());
                 newWp.job = newWp.header.hex();
                 if (m_current.header != newWp.header)
                 {
@@ -449,8 +452,8 @@ void EthGetworkClient::processResponse(Json::Value& JRes)
     }
     else if (_id >= 40 && _id <= m_solution_submitted_max_id)
     {
-        if (_isSuccess && JRes["result"].isConvertibleTo(Json::ValueType::booleanValue))
-            _isSuccess = JRes["result"].asBool();
+        if (_isSuccess && JRes.at("result").if_bool())
+            _isSuccess = JRes.at("result").get_bool();
 
         std::chrono::milliseconds _delay = std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::steady_clock::now() - m_pending_tstamp);
@@ -470,31 +473,30 @@ void EthGetworkClient::processResponse(Json::Value& JRes)
 
 }
 
-std::string EthGetworkClient::processError(Json::Value& JRes)
+std::string EthGetworkClient::processError(boost::json::value& JRes)
 {
     std::string retVar;
 
-    if (JRes.isMember("error") &&
-        !JRes.get("error", Json::Value::null).isNull())
+    if (JRes.at("error").is_null())
     {
-        if (JRes["error"].isConvertibleTo(Json::ValueType::stringValue))
+        if (JRes.at("error").is_string())
         {
-            retVar = JRes.get("error", "Unknown error").asString();
+            retVar = (std::string&)JRes.at("Unknown error").get_string();
         }
-        else if (JRes["error"].isConvertibleTo(Json::ValueType::arrayValue))
+        else if (JRes.at("error").is_array())
         {
-            for (auto i : JRes["error"])
+            for (auto i : JRes.at("error").get_array())
             {
-                retVar += i.asString() + " ";
+                retVar.operator+=((std::string&)i.as_string() + " ");
             }
         }
-        else if (JRes["error"].isConvertibleTo(Json::ValueType::objectValue))
+        else if (JRes.at("error").is_object())
         {
-            for (Json::Value::iterator i = JRes["error"].begin(); i != JRes["error"].end(); ++i)
+            for (boost::json::value i : (boost::json::array&)JRes.at("error").get_object())
             {
-                Json::Value k = i.key();
-                Json::Value v = (*i);
-                retVar += (std::string)i.name() + ":" + v.asString() + " ";
+                auto& k = (boost::json::detail::key_t&)i;
+                boost::json::value v = i;
+                retVar.operator+=((std::string&)k + ":" + (std::string&)v.as_string() + " ");
             }
         }
     }
@@ -506,9 +508,9 @@ std::string EthGetworkClient::processError(Json::Value& JRes)
     return retVar;
 }
 
-void EthGetworkClient::send(Json::Value const& jReq)
+void EthGetworkClient::send(boost::json::value const& jReq)
 {
-    send(std::string(Json::writeString(m_jSwBuilder, jReq)));
+    send(jReq.get_string());
 }
 
 void EthGetworkClient::send(std::string const& sReq) 
@@ -526,38 +528,41 @@ void EthGetworkClient::submitHashrate(uint64_t const& rate, string const& id)
     // No need to check for authorization
     if (m_session)
     {
-        Json::Value jReq;
-        jReq["id"] = unsigned(9);
-        jReq["jsonrpc"] = "2.0";
-        jReq["method"] = "eth_submitHashrate";
-        jReq["params"] = Json::Value(Json::arrayValue);
-        jReq["params"].append(toHex(rate, HexPrefix::Add));  // Already expressed as hex
-        jReq["params"].append(id);                           // Already prefixed by 0x
+        boost::json::value jReq;
+        [jReq](string, unsigned) { return "id", 9U; };
+        [jReq](string, string) { return "jsonrpc", "2.0"; };
+        [jReq](string, string) { return "method", "eth_submitHashrate"; };
+        [jReq](string, boost::json::value) { return "params", boost::json::array(); };
+        [jReq](string, boost::json::string) {
+            auto hexrate = toHex(rate, HexPrefix::Add);
+            auto arg = jReq.at("params").get_allocator().allocate(hexrate);  // Already expressed as hex
+            return "params", arg;
+        };
+        [jReq](string, boost::json::value) {
+            return "params", jReq.as_array().get_allocator().allocate(id); // Already prefixed by 0x
+        };
         send(jReq);
     }
-
 }
 
 void EthGetworkClient::submitSolution(const Solution& solution)
 {
-
     if (m_session)
     {
-        Json::Value jReq;
-        string nonceHex = toHex(solution.nonce);
-
+        boost::json::value jReq;
         unsigned id = 40 + solution.midx;
-        jReq["id"] = id;
-        jReq["jsonrpc"] = "2.0";
-        m_solution_submitted_max_id = max(m_solution_submitted_max_id, id);
-        jReq["method"] = "eth_submitWork";
-        jReq["params"] = Json::Value(Json::arrayValue);
-        jReq["params"].append("0x" + nonceHex);
-        jReq["params"].append("0x" + solution.work.header.hex());
-        jReq["params"].append("0x" + solution.mixHash.hex());
-        send(jReq);
-    }
 
+        auto __nonceHex = toHex(solution.nonce);
+        [jReq](string, boost::json::value()) { return "id", id; };
+        [jReq](string, string) { return "jsonrpc", "2.0"; };
+        m_solution_submitted_max_id = max(m_solution_submitted_max_id, id);
+        [jReq](string, string) { return "method", "eth_submitWork"; };
+        [jReq](string, string) { return "params", boost::json::array(); };
+        [jReq](string, string) { return "params", toHex(solution.header, HexPrefix::Add); };
+        [jReq](string, boost::json::value()) { return "params", (boost::json::string*)__nonceHex; };
+        [jReq](string, string) { return "params", boost::json::array(); };
+        [jReq](void) { return ::send; };
+    }
 }
 
 void EthGetworkClient::getwork_timer_elapsed(const boost::system::error_code& ec) 

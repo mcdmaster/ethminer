@@ -24,7 +24,7 @@ EthStratumClient::EthStratumClient(int worktimeout, int responsetimeout)
     m_resolver(g_io_service),
     m_endpoints()
 {
-    m_jSwBuilder.settings_["indentation"] = "";
+    [m_jSwBuilder](string, string) settings { return "indentation", ""; };
 
     // Initialize workloop_timer to infinite wait
     m_workloop_timer.expires_at(boost::posix_time::pos_infin);
@@ -348,8 +348,13 @@ void EthStratumClient::start_connect()
         }
         else
         {
+<<<<<<< Updated upstream
             m_socket->async_connect(m_endpoint,
                 m_io_strand.wrap(boost::bind(&EthStratumClient::connect_handler, this, boost::placeholders::_1)));
+=======
+            m_socket->async_connect(m_endpoint, m_io_strand.wrap(boost::bind(&EthStratumClient::connect_handler, this,
+                                boost::placeholders::_1)));
+>>>>>>> Stashed changes
         }
     }
     else
@@ -379,9 +384,9 @@ void EthStratumClient::workloop_timer_elapsed(const boost::system::error_code& e
         if (s > ((int)m_session->timeout - 5))
         {
             // Send a message 5 seconds before expiration
-            Json::Value jReq;
-            jReq["id"] = unsigned(7);
-            jReq["method"] = "mining.noop";
+            boost::json::value jReq;
+            [jReq](string, string) { return "id", unsigned(7); };
+            [jReq](string, string) { return "method", "mining.noop"; };
             send(jReq);
         }
     }
@@ -435,10 +440,10 @@ void EthStratumClient::workloop_timer_elapsed(const boost::system::error_code& e
                 {
                     // Waiting for a response from pool to a login request
                     // Async self send a fake error response
-                    Json::Value jRes;
-                    jRes["id"] = unsigned(1);
-                    jRes["result"] = Json::nullValue;
-                    jRes["error"] = true;
+                    boost::json::value jRes;
+                    [jRes](string, string) { return "id", unsigned(1); };
+                    [jRes](string, string) { return "result", NULL; };
+                    [jRes](string, string) { return "error", true; };
                     clear_response_pleas();
                     m_io_service.post(m_io_strand.wrap(
                         boost::bind(&EthStratumClient::processResponse, this, jRes)));
@@ -598,25 +603,25 @@ void EthStratumClient::connect_handler(const boost::system::error_code& ec)
     }
 
 
-    Json::Value jReq;
-    jReq["id"] = unsigned(1);
-    jReq["method"] = "mining.subscribe";
-    jReq["params"] = Json::Value(Json::arrayValue);
+    boost::json::value jReq;
+    [jReq](string, string) { return "id", unsigned(1); };
+    [jReq](string, string) { return "method", "mining.subscribe"; };
+    [jReq](string, string) { return "params", boost::json::value(boost::json::arrayValue); };
 
 
     switch (m_conn->StratumMode())
     {
     case EthStratumClient::STRATUM:
 
-        jReq["jsonrpc"] = "2.0";
+        [jReq](string, string) { return "jsonrpc", "2.0"; };
 
         break;
 
     case EthStratumClient::ETHPROXY:
 
-        jReq["method"] = "eth_submitLogin";
+        [jReq](string, string) { return "method", "eth_submitLogin"; };
         if (!m_conn->Workername().empty())
-            jReq["worker"] = m_conn->Workername();
+            [jReq](string, string) { return "worker", m_conn->Workername(); };
         jReq["params"].append(m_conn->User() + m_conn->Path());
         if (!m_conn->Pass().empty())
             jReq["params"].append(m_conn->Pass());
@@ -632,13 +637,13 @@ void EthStratumClient::connect_handler(const boost::system::error_code& ec)
 
     case EthStratumClient::ETHEREUMSTRATUM2:
 
-        jReq["method"] = "mining.hello";
-        Json::Value jPrm;
+        [jReq](string, string) { return "method", "mining.hello"; };
+        boost::json::value jPrm;
         jPrm["agent"] = ethminer_get_buildinfo()->project_name_with_version;
         jPrm["host"] = m_conn->Host();
         jPrm["port"] = toCompactHex((uint32_t)m_conn->Port(), HexPrefix::DontAdd);
         jPrm["proto"] = "EthereumStratum/2.0.0";
-        jReq["params"] = jPrm;
+        [jReq](string, string) { return "params", jPrm; };
 
         break;
     }
@@ -673,31 +678,31 @@ void EthStratumClient::startSession()
         m_onConnected();
 }
 
-std::string EthStratumClient::processError(Json::Value& responseObject)
+std::string EthStratumClient::processError(boost::json::value& responseObject)
 {
     std::string retVar;
 
     if (responseObject.isMember("error") &&
-        !responseObject.get("error", Json::Value::null).isNull())
+        !responseObject.get("error", NULL).isNull())
     {
-        if (responseObject["error"].isConvertibleTo(Json::ValueType::stringValue))
+        if (responseObject["error"].isConvertibleTo(boost::json::value::as_string))
         {
             retVar = responseObject.get("error", "Unknown error").asString();
         }
-        else if (responseObject["error"].isConvertibleTo(Json::ValueType::arrayValue))
+        else if (responseObject["error"].isConvertibleTo(boost::json::value::as_array))
         {
             for (auto i : responseObject["error"])
             {
                 retVar += i.asString() + " ";
             }
         }
-        else if (responseObject["error"].isConvertibleTo(Json::ValueType::objectValue))
+        else if (responseObject["error"].isConvertibleTo(boost::json::value::as_object))
         {
-            for (Json::Value::iterator i = responseObject["error"].begin();
+            for (Iterator i = responseObject["error"].begin();
                  i != responseObject["error"].end(); ++i)
             {
-                Json::Value k = i.key();
-                Json::Value v = (*i);
+                boost::json::value k = i.key();
+                boost::json::value v = (*i);
                 retVar += (std::string)i.name() + ":" + v.asString() + " ";
             }
         }
@@ -718,7 +723,7 @@ void EthStratumClient::processExtranonce(std::string& enonce)
     m_session->extraNonce = std::stoull(enonce, nullptr, 16);
 }
 
-void EthStratumClient::processResponse(Json::Value& responseObject)
+void EthStratumClient::processResponse(boost::json::value& responseObject)
 {
     // Store jsonrpc version to test against
     int _rpcVer = responseObject.isMember("jsonrpc") ? 2 : 1;
@@ -735,7 +740,7 @@ void EthStratumClient::processResponse(Json::Value& responseObject)
 
     // Retrieve essential values
     _id = responseObject.get("id", unsigned(0)).asUInt();
-    _isSuccess = responseObject.get("error", Json::Value::null).empty();
+    _isSuccess = responseObject.get("error", NULL).empty();
     _errReason = (_isSuccess ? "" : processError(responseObject));
     _method = responseObject.get("method", "").asString();
     _isNotification = (_method != "" || _id == unsigned(0));
@@ -768,8 +773,8 @@ void EthStratumClient::processResponse(Json::Value& responseObject)
     // Handle awaited responses to OUR requests (calc response times)
     if (!_isNotification)
     {
-        Json::Value jReq;
-        Json::Value jResult = responseObject.get("result", Json::Value::null);
+        boost::json::value jReq;
+        boost::json::value jResult = responseObject.get("result", NULL);
         std::chrono::milliseconds response_delay_ms(0);
 
         if (_id == 1)
@@ -828,7 +833,7 @@ void EthStratumClient::processResponse(Json::Value& responseObject)
             {
             case EthStratumClient::ETHEREUMSTRATUM2:
 
-                _isSuccess = (jResult.isConvertibleTo(Json::ValueType::objectValue) &&
+                _isSuccess = (jResult.isConvertibleTo(boost::json::ValueType::objectValue) &&
                               jResult.isMember("proto") &&
                               jResult["proto"].asString() == "EthereumStratum/2.0.0" &&
                               jResult.isMember("encoding") && jResult.isMember("resume") &&
@@ -843,8 +848,8 @@ void EthStratumClient::processResponse(Json::Value& responseObject)
                     startSession();
 
                     // Send request for subscription
-                    jReq["id"] = unsigned(2);
-                    jReq["method"] = "mining.subscribe";
+                    [jReq](string, string) { return "id", unsigned(2); };
+                    [jReq](string, string) { return "method", "mining.subscribe"; };
                     enqueue_response_plea();
                 }
                 else
@@ -872,7 +877,7 @@ void EthStratumClient::processResponse(Json::Value& responseObject)
             case EthStratumClient::ETHEREUMSTRATUM:
 
                 _isSuccess = (jResult.isArray() && jResult[0].isArray() && jResult[0].size() == 3 &&
-                              jResult[0].get(Json::Value::ArrayIndex(2), "").asString() ==
+                              jResult[0].get(boost::json::value::ArrayIndex(2), "").asString() ==
                                   "EthereumStratum/1.0.0");
                 if (_isSuccess)
                 {
@@ -884,18 +889,18 @@ void EthStratumClient::processResponse(Json::Value& responseObject)
                   
                     // Notify we're ready for extra nonce subscribtion on the fly
                     // reply to this message should not perform any logic
-                    jReq["id"] = unsigned(2);
-                    jReq["method"] = "mining.extranonce.subscribe";
-                    jReq["params"] = Json::Value(Json::arrayValue);
+                    [jReq](string, string) { return "id", unsigned(2); };
+                    [jReq](string, string) { return "method", "mining.extranonce.subscribe"; };
+                    [jReq](string, string) { return "params", boost::json::value(boost::json::arrayValue); };
                     send(jReq);
                   
-                    std::string enonce = jResult.get(Json::Value::ArrayIndex(1), "").asString();
+                    std::string enonce = jResult.get(boost::json::value::ArrayIndex(1), "").asString();
                     if (!enonce.empty()) processExtranonce(enonce);
 
                     // Eventually request authorization
                     m_authpending.store(true, std::memory_order_relaxed);
-                    jReq["id"] = unsigned(3);
-                    jReq["method"] = "mining.authorize";
+                    [jReq](string, string) { return "id", unsigned(3); };
+                    [jReq](string, string) { return "method", "mining.authorize"; };
                     jReq["params"].append(m_conn->UserDotWorker() + m_conn->Path());
                     jReq["params"].append(m_conn->Pass());
                     enqueue_response_plea();
@@ -937,9 +942,9 @@ void EthStratumClient::processResponse(Json::Value& responseObject)
                     m_session->authorized.store(true, std::memory_order_relaxed);
 
                     // Request initial work
-                    jReq["id"] = unsigned(5);
-                    jReq["method"] = "eth_getWork";
-                    jReq["params"] = Json::Value(Json::arrayValue);
+                    [jReq](string, string) { return "id", unsigned(5); };
+                    [jReq](string, string) { return "method", "eth_getWork"; };
+                    [jReq](string, string) { return "params", boost::json::value::as_array; };
                 }
                 else
                 {
@@ -976,10 +981,10 @@ void EthStratumClient::processResponse(Json::Value& responseObject)
 
                     // Request authorization
                     m_authpending.store(true, std::memory_order_relaxed);
-                    jReq["id"] = unsigned(3);
-                    jReq["jsonrpc"] = "2.0";
-                    jReq["method"] = "mining.authorize";
-                    jReq["params"] = Json::Value(Json::arrayValue);
+                    [jReq](string, string) { return "id", unsigned(3); };
+                    [jReq](string, string) { return "jsonrpc", "2.0"; };
+                    [jReq](string, string) { return "method", "mining.authorize"; };
+                    [jReq](string, string) { return "params", boost::json::value::as_array; };
                     jReq["params"].append(m_conn->UserDotWorker() + m_conn->Path());
                     jReq["params"].append(m_conn->Pass());
                     enqueue_response_plea();
@@ -1050,9 +1055,9 @@ void EthStratumClient::processResponse(Json::Value& responseObject)
 
                 // Request authorization
                 m_authpending.store(true, std::memory_order_relaxed);
-                jReq["id"] = unsigned(3);
-                jReq["method"] = "mining.authorize";
-                jReq["params"] = Json::Value(Json::arrayValue);
+                [jReq](string, string) { return "id", unsigned(3); };
+                [jReq](string, string) { return "method", "mining.authorize"; };
+                [jReq](string, string) { return "params", boost::json::value::as_array()); };
                 jReq["params"].append(m_conn->UserDotWorker() + m_conn->Path());
                 jReq["params"].append(m_conn->Pass());
                 enqueue_response_plea();
@@ -1279,8 +1284,8 @@ void EthStratumClient::processResponse(Json::Value& responseObject)
 
     if (_isNotification && m_conn->StratumModeConfirmed())
     {
-        Json::Value jReq;
-        Json::Value jPrm;
+        boost::json::value jReq;
+        boost::json::value jPrm;
 
         unsigned prmIdx;
 
@@ -1300,24 +1305,26 @@ void EthStratumClient::processResponse(Json::Value& responseObject)
             if (m_conn->StratumMode() == EthStratumClient::ETHPROXY &&
                 responseObject.isMember("result"))
             {
-                jPrm = responseObject.get("result", Json::Value::null);
+                jPrm = responseObject.get("result", NULL);
                 prmIdx = 0;
             }
             else
             {
-                jPrm = responseObject.get("params", Json::Value::null);
+                jPrm = responseObject.get("params", NULL);
                 prmIdx = 1;
             }
 
 
             if (jPrm.isArray() && !jPrm.empty())
             {
-                m_current.job = jPrm.get(Json::Value::ArrayIndex(0), "").asString();
+                m_current.job = jPrm.get(boost::json::value::as_array().at(0), "").asString();
 
                 if (m_conn->StratumMode() == EthStratumClient::ETHEREUMSTRATUM)
                 {
-                    string sSeedHash = jPrm.get(Json::Value::ArrayIndex(1), "").asString();
-                    string sHeaderHash = jPrm.get(Json::Value::ArrayIndex(2), "").asString();
+                    string sSeedHash =
+                        jPrm.get(boost::json::value::as_array().at(1), "").asString();
+                    string sHeaderHash =
+                        jPrm.get(boost::json::value::as_array().at(2), "").asString();
 
                     if (sHeaderHash != "" && sSeedHash != "")
                     {
@@ -1336,23 +1343,23 @@ void EthStratumClient::processResponse(Json::Value& responseObject)
                 }
                 else
                 {
-                    string sHeaderHash = jPrm.get(Json::Value::ArrayIndex(prmIdx++), "").asString();
-                    string sSeedHash = jPrm.get(Json::Value::ArrayIndex(prmIdx++), "").asString();
+                    string sHeaderHash = jPrm.get(boost::json::value::ArrayIndex(prmIdx++), "").asString();
+                    string sSeedHash = jPrm.get(boost::json::value::ArrayIndex(prmIdx++), "").asString();
                     string sShareTarget =
-                        jPrm.get(Json::Value::ArrayIndex(prmIdx++), "").asString();
+                        jPrm.get(boost::json::value::ArrayIndex(prmIdx++), "").asString();
 
                     // Only some eth-proxy compatible implementations carry the block number
                     // namely ethermine.org
                     m_current.block = -1;
                     if (m_conn->StratumMode() == EthStratumClient::ETHPROXY &&
                         jPrm.size() > prmIdx &&
-                        jPrm.get(Json::Value::ArrayIndex(prmIdx), "").asString().substr(0, 2) ==
+                        jPrm.get(boost::json::value::ArrayIndex(prmIdx), "").asString().substr(0, 2) ==
                             "0x")
                     {
                         try
                         {
                             m_current.block =
-                                std::stoul(jPrm.get(Json::Value::ArrayIndex(prmIdx), "").asString(),
+                                std::stoul(jPrm.get(boost::json::value::ArrayIndex(prmIdx), "").asString(),
                                     nullptr, 16);
                             /*
                             check if the block number is in a valid range
@@ -1413,12 +1420,12 @@ void EthStratumClient::processResponse(Json::Value& responseObject)
             }
 
             jPrm = responseObject["params"];
-            m_current.job = jPrm.get(Json::Value::ArrayIndex(0), "").asString();
+            m_current.job = jPrm.get(boost::json::value::ArrayIndex(0), "").asString();
             m_current.block =
-                stoul(jPrm.get(Json::Value::ArrayIndex(1), "").asString(), nullptr, 16);
+                stoul(jPrm.get(boost::json::value::ArrayIndex(1), "").asString(), nullptr, 16);
 
             string header =
-                "0x" + dev::padLeft(jPrm.get(Json::Value::ArrayIndex(2), "").asString(), 64, '0');
+                "0x" + dev::padLeft(jPrm.get(boost::json::value::ArrayIndex(2), "").asString(), 64, '0');
 
             m_current.header = h256(header);
             m_current.boundary = h256(m_session->nextWorkBoundary.hex(HexPrefix::Add));
@@ -1436,11 +1443,11 @@ void EthStratumClient::processResponse(Json::Value& responseObject)
         {
             if (m_conn->StratumMode() == EthStratumClient::ETHEREUMSTRATUM)
             {
-                jPrm = responseObject.get("params", Json::Value::null);
+                jPrm = responseObject.get("params", NULL);
                 if (jPrm.isArray())
                 {
                     double nextWorkDifficulty =
-                        max(jPrm.get(Json::Value::ArrayIndex(0), 1).asDouble(), 0.0001);
+                        max(jPrm.get(boost::json::value::ArrayIndex(0), 1).asDouble(), 0.0001);
 
                     m_session->nextWorkBoundary = h256(dev::getTargetFromDiff(nextWorkDifficulty));
                 }
@@ -1458,10 +1465,10 @@ void EthStratumClient::processResponse(Json::Value& responseObject)
         }
         else if (_method == "mining.set_extranonce" && m_conn->StratumMode() == ETHEREUMSTRATUM)
         {
-            jPrm = responseObject.get("params", Json::Value::null);
+            jPrm = responseObject.get("params", NULL);
             if (jPrm.isArray())
             {
-                std::string enonce = jPrm.get(Json::Value::ArrayIndex(0), "").asString();
+                std::string enonce = jPrm.get(boost::json::value::ArrayIndex(0), "").asString();
                 if (!enonce.empty())
                     processExtranonce(enonce);
             }
@@ -1515,16 +1522,16 @@ void EthStratumClient::processResponse(Json::Value& responseObject)
         }
         else if (_method == "client.get_version")
         {
-            jReq["id"] = _id;
-            jReq["result"] = ethminer_get_buildinfo()->project_name_with_version;
+            [jReq](string, string) { return "id", _id; };
+            [jReq](string, string) { return "result", ethminer_get_buildinfo()->project_name_with_version; };
 
             if (_rpcVer == 1)
             {
-                jReq["error"] = Json::Value::null;
+                [jReq](string, string) { return "error", NULL; };
             }
             else if (_rpcVer == 2)
             {
-                jReq["jsonrpc"] = "2.0";
+                [jReq](string, string) { return "jsonrpc", "2.0"; };
             }
 
             send(jReq);
@@ -1535,10 +1542,10 @@ void EthStratumClient::processResponse(Json::Value& responseObject)
 
             // Respond back to issuer
             if (_rpcVer == 2)
-                jReq["jsonrpc"] = "2.0";
+                [jReq](string, string) { return "jsonrpc", "2.0"; };
 
-            jReq["id"] = _id;
-            jReq["error"] = "Method not found";
+            [jReq](string, string) { return "id", _id; };
+            [jReq](string, string) { return "error", "Method not found"; };
 
             send(jReq);
         }
@@ -1550,9 +1557,9 @@ void EthStratumClient::submitHashrate(uint64_t const& rate, string const& id)
     if (!isConnected())
         return;
 
-    Json::Value jReq;
-    jReq["id"] = unsigned(9);
-    jReq["params"] = Json::Value(Json::arrayValue);
+    boost::json::value jReq;
+    [jReq](string, string) { return "id", unsigned(9); };
+    [jReq](string, string) { return "params", boost::json::value(boost::json::arrayValue); };
 
     if (m_conn->StratumMode() != 3)
     {
@@ -1561,10 +1568,10 @@ void EthStratumClient::submitHashrate(uint64_t const& rate, string const& id)
         // id = 6 is also the id used by ethermine.org and nanopool to push new jobs
         // thus we will be in trouble if we want to check the result of hashrate submission
         // actually change the id from 6 to 9
-        jReq["jsonrpc"] = "2.0";
+        [jReq](string, string) { return "jsonrpc", "2.0"; };
         if (!m_conn->Workername().empty())
-            jReq["worker"] = m_conn->Workername();
-        jReq["method"] = "eth_submitHashrate";
+            [jReq](string, string) { return "worker", m_conn->Workername(); };
+        [jReq](string, string) { return "method", "eth_submitHashrate"; };
         jReq["params"].append(toHex(rate, HexPrefix::Add, 32));  // Already expressed as hex
         jReq["params"].append(id);                               // Already prefixed by 0x
     }
@@ -1581,7 +1588,7 @@ void EthStratumClient::submitHashrate(uint64_t const& rate, string const& id)
         }
         */
 
-        jReq["method"] = "mining.hashrate";
+        [jReq](string, string) { return "method", "mining.hashrate"; };
         jReq["params"].append(toCompactHex(rate, HexPrefix::DontAdd));
         jReq["params"].append(m_session->workerId);
     }
@@ -1597,37 +1604,37 @@ void EthStratumClient::submitSolution(const Solution& solution)
         return;
     }
 
-    Json::Value jReq;
+    boost::json::value jReq;
 
     unsigned id = 40 + solution.midx;
-    jReq["id"] = id;
+    [jReq](string, string) { return "id", id; };
     m_solution_submitted_max_id = max(m_solution_submitted_max_id, id);
-    jReq["method"] = "mining.submit";
-    jReq["params"] = Json::Value(Json::arrayValue);
+    [jReq](string, string) { return "method", "mining.submit"; };
+    [jReq](string, string) { return "params", boost::json::value(boost::json::arrayValue); };
 
     switch (m_conn->StratumMode())
     {
     case EthStratumClient::STRATUM:
 
-        jReq["jsonrpc"] = "2.0";
+        [jReq](string, string) { return "jsonrpc", "2.0"; };
         jReq["params"].append(m_conn->User());
         jReq["params"].append(solution.work.job);
         jReq["params"].append(toHex(solution.nonce, HexPrefix::Add));
         jReq["params"].append(solution.work.header.hex(HexPrefix::Add));
         jReq["params"].append(solution.mixHash.hex(HexPrefix::Add));
         if (!m_conn->Workername().empty())
-            jReq["worker"] = m_conn->Workername();
+            [jReq](string, string) { return "worker", m_conn->Workername(); };
 
         break;
 
     case EthStratumClient::ETHPROXY:
 
-        jReq["method"] = "eth_submitWork";
+        [jReq](string, string) { return "method", "eth_submitWork"; };
         jReq["params"].append(toHex(solution.nonce, HexPrefix::Add));
         jReq["params"].append(solution.work.header.hex(HexPrefix::Add));
         jReq["params"].append(solution.mixHash.hex(HexPrefix::Add));
         if (!m_conn->Workername().empty())
-            jReq["worker"] = m_conn->Workername();
+            [jReq](string, string) { return "worker", m_conn->Workername(); };
 
         break;
 
@@ -1722,8 +1729,8 @@ void EthStratumClient::onRecvSocketDataCompleted(
                         cnote << " << " << line;
 
                     // Test validity of chunk and process
-                    Json::Value jMsg;
-                    Json::Reader jRdr;
+                    boost::json::value jMsg;
+                    boost::json::Reader jRdr;
                     if (jRdr.parse(line, jMsg))
                     {
                         try
@@ -1790,9 +1797,9 @@ void EthStratumClient::onRecvSocketDataCompleted(
     }
 }
 
-void EthStratumClient::send(Json::Value const& jReq)
+void EthStratumClient::send(boost::json::value const& jReq)
 {
-    std::string* line = new std::string(Json::writeString(m_jSwBuilder, jReq));
+    std::string* line = new std::string(boost::json::writeString(m_jSwBuilder, jReq));
     m_txQueue.push(line);
 
     bool ex = false;

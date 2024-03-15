@@ -91,7 +91,7 @@ enum class SolutionAccountingEnum
 
 struct MinerSettings
 {
-    vector<unsigned> devices;
+    std::vector<unsigned> devices;
 };
 
 // Holds settings for CUDA Miner
@@ -287,7 +287,7 @@ struct TelemetryType
             i++;
             hr = miner.hashrate;
             if (hr > 0.0f)
-                hr /= pow(1000.0f, magnitude);
+                hr = hr / (float)pow(1000.0f, magnitude);
 
             _ret << (miner.paused ? EthRed : "") << miner.prefix << i << " " << EthTeal
                  << std::fixed << std::setprecision(2) << hr << EthReset;

@@ -1,12 +1,16 @@
 #pragma once
 
+#ifndef _GCC_LIMITS_H_
+#define _GCC_LIMITS_H_
+#endif
+#include <limits.h>
+
 #include <regex>
 
 #include <boost/asio.hpp>
 #include <boost/bind/bind.hpp>
 #include <boost/shared_ptr.hpp>
-
-#include <json/json.h>
+#include <boost/json.hpp>
 
 #include <libethcore/Farm.h>
 #include <libethcore/Miner.h>
@@ -28,7 +32,7 @@ public:
 
     void start();
 
-    Json::Value getMinerStat1();
+    boost::json::value getMinerStat1();
 
     using Disconnected = std::function<void(int const&)>;
     void onDisconnected(Disconnected const& _handler) { m_onDisconnected = _handler; }
@@ -39,16 +43,17 @@ public:
 
 private:
     void disconnect();
-    void processRequest(Json::Value& jRequest, Json::Value& jResponse);
+    void processRequest(boost::json::value& jRequest, boost::json::value& jResponse);
     void recvSocketData();
     void onRecvSocketDataCompleted(
         const boost::system::error_code& ec, std::size_t bytes_transferred);
-    void sendSocketData(Json::Value const& jReq, bool _disconnect = false);
+    void sendSocketData(boost::json::value const& jReq, bool _disconnect = false);
     void sendSocketData(std::string const& _s, bool _disconnect = false);
     void onSendSocketDataCompleted(const boost::system::error_code& ec, bool _disconnect = false);
 
-    Json::Value getMinerStatDetail();
-    Json::Value getMinerStatDetailPerMiner(const TelemetryType& _t, std::shared_ptr<Miner> _miner);
+    boost::json::value getMinerStatDetail();
+    boost::json::value getMinerStatDetailPerMiner(
+        const TelemetryType& _t, std::shared_ptr<Miner> _miner);
 
     std::string getHttpMinerStatDetail();
 
@@ -60,7 +65,7 @@ private:
     boost::asio::io_service::strand& m_io_strand;
     boost::asio::streambuf m_sendBuffer;
     boost::asio::streambuf m_recvBuffer;
-    Json::StreamWriterBuilder m_jSwBuilder;
+    boost::json::serializer m_jSwBuilder;
 
     std::string m_message;  // The internal message string buffer
 

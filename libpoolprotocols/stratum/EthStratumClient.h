@@ -1,22 +1,26 @@
 #pragma once
 
-#include <iostream>
+#ifndef _GCC_LIMITS_H_
+#define _GCC_LIMITS_H_
+#endif
+#include <limits.h>
 
+#include "../PoolClient.h"
+
+#include <iostream>
 #include <boost/array.hpp>
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/bind/bind.hpp>
 #include <boost/lockfree/queue.hpp>
 
-#include <json/json.h>
+#include <boost/json.hpp>
 
 #include <libdevcore/FixedHash.h>
 #include <libdevcore/Log.h>
 #include <libethcore/EthashAux.h>
 #include <libethcore/Farm.h>
 #include <libethcore/Miner.h>
-
-#include "../PoolClient.h"
 
 using namespace std;
 using namespace dev;
@@ -95,14 +99,14 @@ private:
     void connect_handler(const boost::system::error_code& ec);
     void workloop_timer_elapsed(const boost::system::error_code& ec);
 
-    void processResponse(Json::Value& responseObject);
-    std::string processError(Json::Value& erroresponseObject);
+    void processResponse(boost::json::value& responseObject);
+    std::string processError(boost::json::value& erroresponseObject);
     void processExtranonce(std::string& enonce);
 
     void recvSocketData();
     void onRecvSocketDataCompleted(
         const boost::system::error_code& ec, std::size_t bytes_transferred);
-    void send(Json::Value const& jReq);
+    void send(boost::json::value const& jReq);
     void sendSocketData();
     void onSendSocketDataCompleted(const boost::system::error_code& ec);
     void onSSLShutdownCompleted(const boost::system::error_code& ec);
@@ -137,7 +141,7 @@ private:
 
     boost::asio::streambuf m_sendBuffer;
     boost::asio::streambuf m_recvBuffer;
-    Json::StreamWriterBuilder m_jSwBuilder;
+    boost::json::serializer m_jSwBuilder;
 
     boost::asio::deadline_timer m_workloop_timer;
 

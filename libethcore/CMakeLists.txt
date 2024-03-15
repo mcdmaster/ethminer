@@ -4,10 +4,27 @@ set(SOURCES
 	Miner.h Miner.cpp
 )
 
+<<<<<<< Updated upstream
 include_directories(BEFORE ..  ${Boost_INCLUDE_DIR})
+=======
+include_directories(BEFORE
+	..
+	# C:/msys64/usr/include/json
+	C:/msys64/usr/include/ethash
+)
+>>>>>>> Stashed changes
 
 add_library(ethcore ${SOURCES})
-target_link_libraries(ethcore PUBLIC devcore ethash::ethash PRIVATE hwmon)
+target_link_libraries(ethcore 
+PUBLIC 
+devcore 
+PRIVATE
+hwmon
+# C:/msys64/usr/lib/libjsoncpp.a
+C:/msys64/usr/local/lib/ethash.lib 
+C:/msys64/usr/local/lib/ethash-global-context.lib 
+crypt32.lib
+)
 
 if(ETHASHCL)
 	target_link_libraries(ethcore PRIVATE ethash-cl)

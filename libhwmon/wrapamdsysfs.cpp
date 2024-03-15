@@ -3,6 +3,9 @@
  *
  * By Philipp Andreas - github@smurfy.de
  */
+#include "wrapamdsysfs.h"
+#include "wraphelper.h"
+
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,8 +14,8 @@
 #include <dirent.h>
 #endif
 
-#include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include <algorithm>
 #include <climits>
@@ -23,9 +26,6 @@
 #include <limits>
 #include <regex>
 #include <string>
-
-#include "wrapamdsysfs.h"
-#include "wraphelper.h"
 
 static bool getFileContentValue(const char* filename, unsigned int& value)
 {

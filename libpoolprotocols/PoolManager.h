@@ -2,16 +2,20 @@
 
 #include <iostream>
 
-#include <json/json.h>
-
-#include <libdevcore/Worker.h>
-#include <libethcore/Farm.h>
-#include <libethcore/Miner.h>
+#ifndef _GCC_LIMITS_H_
+#define _GCC_LIMITS_H_
+#endif
+#include <limits.h>
 
 #include "PoolClient.h"
 #include "getwork/EthGetworkClient.h"
 #include "stratum/EthStratumClient.h"
 #include "testing/SimulateClient.h"
+#include <libdevcore/Worker.h>
+#include <libethcore/Farm.h>
+#include <libethcore/Miner.h>
+
+#include <boost/json.hpp>
 
 using namespace std;
 
@@ -42,7 +46,7 @@ public:
     static PoolManager& p() { return *m_this; }
     void addConnection(std::string _connstring);
     void addConnection(std::shared_ptr<URI> _uri);
-    Json::Value getConnectionsJson();
+    boost::json::value getConnectionsJson();
     void setActiveConnection(unsigned int idx);
     void setActiveConnection(std::string& _connstring);
     std::shared_ptr<URI> getActiveConnection();

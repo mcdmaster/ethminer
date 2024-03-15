@@ -15,10 +15,13 @@
     along with ethminer.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <CLI/CLI.hpp>
+#ifndef _GCC_LIMITS_H_
+#define _GCC_LIMITS_H_
+#endif
+#include <limits.h>
 
-#include <ethminer/buildinfo.h>
-#include <condition_variable>
+#include "ethminer/buildinfo.h"
+#include <CLI/CLI.hpp>
 
 #ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
 #define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
@@ -45,19 +48,28 @@
 #include <execinfo.h>
 #elif defined(_WIN32)
 #include <Windows.h>
+#include <WinSock2.h>
 #endif
+
+#include <condition_variable>
+#include <clocale>
+#include <cmath>
+#include <cstdint>
+#include <cstdlib>
+
+#include <boost/asio.hpp>
+#include <boost/filesystem.hpp>
 
 using namespace std;
 using namespace dev;
 using namespace dev::eth;
 
-
 // Global vars
 bool g_running = false;
 bool g_exitOnError = false;  // Whether or not ethminer should exit on mining threads errors
 
-condition_variable g_shouldstop;
-boost::asio::io_service g_io_service;  // The IO service itself
+std::condition_variable g_shouldstop;
+boost::asio::io_context g_io_service;  // The IO service itself
 
 struct MiningChannel : public LogChannel
 {

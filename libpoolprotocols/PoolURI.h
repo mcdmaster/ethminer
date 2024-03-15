@@ -17,6 +17,11 @@
 
 #pragma once
 
+#ifndef _GCC_LIMITS_H_
+#define _GCC_LIMITS_H_
+#endif
+#include <limits.h>
+
 #include <regex>
 #include <string>
 
