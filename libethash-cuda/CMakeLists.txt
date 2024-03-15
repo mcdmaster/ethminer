@@ -21,6 +21,8 @@ if(COMPUTE AND (COMPUTE GREATER 0))
 	list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_${COMPUTE},code=sm_${COMPUTE}")
 else()
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 	if (CUDA_VERSION VERSION_LESS 11.0)
 		list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_30,code=sm_30")
 	endif()
@@ -28,6 +30,10 @@ else()
 		list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_35,code=sm_35")
 	endif()
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 	# list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_30,code=sm_30")
 	list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_35,code=sm_35")
 >>>>>>> Stashed changes
@@ -57,11 +63,17 @@ file(GLOB sources "*.cpp" "*.cu")
 file(GLOB headers "*.h" "*.cuh")
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 cuda_add_library(ethash-cuda STATIC ${sources} ${headers})
 target_link_libraries(ethash-cuda ethcore ethash::ethash  ${Boost_LIBRARY_DIR_RELEASE})
 target_include_directories(ethash-cuda PUBLIC ${CUDA_INCLUDE_DIRS})
 target_include_directories(ethash-cuda PRIVATE .. ${CMAKE_CURRENT_BINARY_DIR})
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 add_library(ethash-cuda STATIC ${sources} ${headers})
 
 target_link_libraries(ethash-cuda
@@ -93,4 +105,10 @@ PRIVATE
 	# C:/msys64/usr/include/json
 	C:/msys64/usr/include/ethash
 )
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

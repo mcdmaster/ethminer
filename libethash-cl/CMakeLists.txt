@@ -24,6 +24,8 @@ set(SOURCES
 )
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 if(USE_SYS_OPENCL)
 	# On macOS or using ROCm-OpenCL, use system OpenCL library.
 	find_package(OpenCL REQUIRED)
@@ -32,6 +34,10 @@ else()
 	find_package(OpenCL CONFIG REQUIRED)
 endif()
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 #if(APPLE)
 #	# On macOS use system OpenCL library.
 #	find_package(OpenCL REQUIRED)
@@ -39,6 +45,12 @@ endif()
 #	hunter_add_package(OpenCL)
 #	find_package(OpenCL CONFIG REQUIRED)
 #endif()
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 include_directories(
@@ -57,10 +69,16 @@ find_package(OpenCL REQUIRED)
 
 add_library(ethash-cl ${SOURCES})
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 target_link_libraries(ethash-cl PUBLIC ethcore ethash::ethash)
 target_link_libraries(ethash-cl PRIVATE OpenCL::OpenCL)
 target_link_libraries(ethash-cl PRIVATE ${Boost_LIBRARY_DIR_RELEASE})
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 target_link_directories(ethash-cl
 PRIVATE
 	${BOOST_ROOT}/lib
@@ -78,4 +96,10 @@ PRIVATE
 	Threads::Threads
 	Boost::filesystem
 )
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

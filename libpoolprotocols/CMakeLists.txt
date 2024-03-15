@@ -1,6 +1,16 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 cmake_minimum_required(VERSION 3.24)
 project(poolprotocols)
+=======
+set(CMAK_C_COMPILER C:/Progra~1/NVIDIA~2/CUDA/v11.7/bin/nvcc.exe)
+set(CMAK_CXX_COMPILER C:/Progra~1/NVIDIA~2/CUDA/v11.7/bin/nvcc.exe)
+>>>>>>> Stashed changes
+=======
+set(CMAK_C_COMPILER C:/Progra~1/NVIDIA~2/CUDA/v11.7/bin/nvcc.exe)
+set(CMAK_CXX_COMPILER C:/Progra~1/NVIDIA~2/CUDA/v11.7/bin/nvcc.exe)
+>>>>>>> Stashed changes
 =======
 set(CMAK_C_COMPILER C:/Progra~1/NVIDIA~2/CUDA/v11.7/bin/nvcc.exe)
 set(CMAK_CXX_COMPILER C:/Progra~1/NVIDIA~2/CUDA/v11.7/bin/nvcc.exe)
@@ -17,10 +27,16 @@ set(SOURCES
 )
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 add_library(poolprotocols ${SOURCES})
 target_link_libraries(poolprotocols PRIVATE devcore ethminer-buildinfo ethash::ethash  ${Boost_LIBRARY_DIR_RELEASE} jsoncpp_static ${OPENSSL_CRYPTO_LIBRARY} ${OPENSSL_SSL_LIBRARY})
 include_directories(AFTER .. ${OPENSSL_INCLUDE_DIR})
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 #hunter_add_package(OpenSSL)
 set(OPENSSL_ROOT_DIR C:/msys64/usr/local)
 set(OPENSSL_INCLUDE_DIR C:/msys64/usr/local/include)
@@ -54,4 +70,10 @@ PRIVATE
 	C:/Progra~1/NVIDIA~2/CUDA/v11.7/include
 	${CMAKE_BINARY_DIR}/../
 )
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

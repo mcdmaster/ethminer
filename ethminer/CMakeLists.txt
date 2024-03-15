@@ -1,5 +1,7 @@
 cmake_policy(SET CMP0015 NEW)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
 aux_source_directory(. SRC_LIST)
 
@@ -26,6 +28,20 @@ hunter_add_package(CLI11)
 find_package(CLI11 REQUIRED)
 >>>>>>> Stashed changes
 
+=======
+cmake_policy(SET CMP0074 NEW)
+
+hunter_add_package(CLI11)
+find_package(CLI11 REQUIRED)
+
+>>>>>>> Stashed changes
+=======
+cmake_policy(SET CMP0074 NEW)
+
+hunter_add_package(CLI11)
+find_package(CLI11 REQUIRED)
+
+>>>>>>> Stashed changes
 include_directories(
 	C:/progra~2/wi3cf2~1/10/Include/10.0.22621.0/ucrt
 	${CMAKE_BINARY_DIR}

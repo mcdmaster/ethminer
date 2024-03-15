@@ -20,8 +20,18 @@ set(HUNTER_CONFIGURATION_TYPES Release CACHE STRING "Build type of Hunter packag
 set(HUNTER_JOBS_NUMBER 6 CACHE STRING "Number of parallel builds used by Hunter")
 HunterGate(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
     URL "https://github.com/cpp-pm/hunter/archive/v0.25.0.tar.gz"
     SHA1 "a1296b351dbfaf036c92d85c1bdb461f615849fa"
+=======
+    URL https://github.com/cpp-pm/hunter/archive/v0.24.3.tar.gz
+    SHA1 10738b59e539818a01090e64c2d09896247530c7
+>>>>>>> Stashed changes
+=======
+    URL https://github.com/cpp-pm/hunter/archive/v0.24.3.tar.gz
+    SHA1 10738b59e539818a01090e64c2d09896247530c7
+>>>>>>> Stashed changes
 =======
     URL https://github.com/cpp-pm/hunter/archive/v0.24.3.tar.gz
     SHA1 10738b59e539818a01090e64c2d09896247530c7
@@ -71,6 +81,8 @@ function(configureProject)
 endfunction()
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 set(Boost_USE_STATIC_LIBS        ON)  # only find static libs
 set(Boost_USE_DEBUG_LIBS        OFF)  # ignore debug libs and
 set(Boost_USE_RELEASE_LIBS       ON)  # only find release libs
@@ -84,11 +96,21 @@ include_directories(${Boost_INCLUDE_DIRS})
 hunter_add_package(jsoncpp)
 find_package(jsoncpp REQUIRED)
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 find_package(PkgConfig)
 hunter_add_package(Boost COMPONENTS filesystem thread)
 find_package(Boost CONFIG REQUIRED COMPONENTS filesystem thread)
 set(CMAKE_THREAD_LIBS_INIT Boost::thread)
 find_package(Threads REQUIRED)
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 hunter_add_package(ethash)

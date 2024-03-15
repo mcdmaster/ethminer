@@ -1,8 +1,14 @@
 # will not use
 hunter_config(CURL VERSION ${HUNTER_CURL_VERSION} CMAKE_ARGS HTTP_ONLY=ON CMAKE_USE_OPENSSL=OFF CMAKE_USE_LIBSSH2=OFF CURL_CA_PATH=none)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 hunter_config(Boost VERSION ${HUNTER_Boost_VERSION} CMAKE_ARGS Boost_Boost=ON Boost_FILESYSTEM=ON Boost_THREAD=ON Boost_MULTITHREADED=ON)
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 hunter_config(OpenSSL
     VERSION 3.0.5
 	URL https://www.openssl.org/source/openssl-3.0.5.tar.gz
@@ -20,4 +26,10 @@ hunter_config(Boost
 		Boost_USE_STATIC_LIBS=ON
 		Boost_LIB_DIAGNOSTIC_DEFINITIONS=ON
 )
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

@@ -1,4 +1,5 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 # Pool Examples for ETH
 
 Pool connection definition is issued via `-P` argument which has this syntax:
@@ -308,6 +309,8 @@ Without email:
 -P stratum1+tcp://ETH_WALLET.WORKERNAME@proxy.pool.whalesburg.com:8082
 ```
 =======
+=======
+>>>>>>> Stashed changes
 # Pool Examples for ETH
 
 Pool connection definition is issued via `-P` argument which has this syntax:
@@ -614,4 +617,7 @@ HINTS:
 ```
 -P stratum1+tcp://ETH_WALLET.WORKERNAME@proxy.pool.whalesburg.com:8082
 ```
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

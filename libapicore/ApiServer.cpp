@@ -1,5 +1,16 @@
 #include "ApiServer.h"
 #include <libethcore/Farm.h>
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+
+#include <ethminer/buildinfo.h>
+#include <boost/filesystem.hpp>
+#include <boost/json.hpp>
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
 
 <<<<<<< Updated upstream
 #include "ethminer/buildinfo.h"
@@ -8,6 +19,8 @@
 #include <ethminer/buildinfo.h>
 #include <boost/filesystem.hpp>
 #include <boost/json.hpp>
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 #ifndef HOST_NAME_MAX
@@ -22,6 +35,8 @@
 #define HTTP_ROWRED_COLOR "#f46542"
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 namespace std
 {
 /* helper functions getting values from a JSON request */
@@ -33,6 +48,18 @@ static bool getRequestValue(const char* membername, bool& refValue, boost::json:
     bool optional, boost::json::value& jResponse)
 >>>>>>> Stashed changes
 {
+=======
+/* helper functions getting values from a JSON request */
+static bool getRequestValue(const char* membername, bool& refValue, boost::json::value& jRequest,
+    bool optional, boost::json::value& jResponse)
+{
+>>>>>>> Stashed changes
+=======
+/* helper functions getting values from a JSON request */
+static bool getRequestValue(const char* membername, bool& refValue, boost::json::value& jRequest,
+    bool optional, boost::json::value& jResponse)
+{
+>>>>>>> Stashed changes
     if (!jRequest["membername"])
     {
         if (!optional)
@@ -230,11 +257,17 @@ static bool parseRequestId(boost::json::value& jRequest, boost::json::value& jRe
 
     // id has invalid type
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
     jResponse[membername] = Json::nullValue;
     jResponse[error][code] = -32600;
     jResponse[error][message] = "Invalid Request (id has invalid type)";
     
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     jResponse[membername] = boost::json::get_null_resource();
     jResponse["error"]["code"] = -32600;
     jResponse["error"]["message"] = "Invalid Request (id has invalid type)";

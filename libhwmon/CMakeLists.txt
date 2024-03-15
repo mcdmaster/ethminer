@@ -1,4 +1,6 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 set(SOURCES
     wraphelper.cpp wraphelper.h
     wrapnvml.h wrapnvml.cpp
@@ -21,6 +23,10 @@ if (ETHASHCUDA)
 	target_include_directories(hwmon PUBLIC ${CUDA_INCLUDE_DIRS})
 endif()
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 set(SOURCES
     wraphelper.cpp wraphelper.h
     wrapnvml.h wrapnvml.cpp
@@ -42,4 +48,10 @@ if (ETHASHCUDA)
 	find_package(CUDA REQUIRED)
 	target_include_directories(hwmon PUBLIC ${CUDA_INCLUDE_DIRS})
 endif()
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

@@ -8,9 +8,15 @@ set(SOURCES
 
 add_library(apicore ${SOURCES})
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 target_link_libraries(apicore PRIVATE ethcore devcore ethminer-buildinfo ${Boost_LIBRARY_DIR_RELEASE} ${OPENSSL_CRYPTO_LIBRARY} ${OPENSSL_SSL_LIBRARY})
 include_directories(.. ${SOURCES} ${CMAKE_PREFIX_PATH})
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 target_link_libraries(apicore
 PRIVATE 
     ethcore 
@@ -29,4 +35,10 @@ PRIVATE
 	C:/msys64/usr/local/include
 	C:/Progra~1/NVIDIA~2/CUDA/v11.7/include
 )
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

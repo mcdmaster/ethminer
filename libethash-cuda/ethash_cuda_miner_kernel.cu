@@ -1,4 +1,6 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 #include "ethash_cuda_miner_kernel.h"
 
 #include "ethash_cuda_miner_kernel_globals.h"
@@ -158,6 +160,10 @@ void set_target(uint64_t _target)
     CUDA_SAFE_CALL(cudaMemcpyToSymbol(d_target, &_target, sizeof(uint64_t)));
 }
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 const char program_source[] = R"%%%(
 
 #include "cuda_helper.h"
@@ -331,4 +337,10 @@ void set_target(uint64_t _target)
     CUDA_SAFE_CALL(cudaMemcpyToSymbol(d_target, &_target, sizeof(uint64_t)));
 }
 )%%%";
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

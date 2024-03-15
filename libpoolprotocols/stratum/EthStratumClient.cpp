@@ -349,8 +349,18 @@ void EthStratumClient::start_connect()
         else
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
             m_socket->async_connect(m_endpoint,
                 m_io_strand.wrap(boost::bind(&EthStratumClient::connect_handler, this, boost::placeholders::_1)));
+=======
+            m_socket->async_connect(m_endpoint, m_io_strand.wrap(boost::bind(&EthStratumClient::connect_handler, this,
+                                boost::placeholders::_1)));
+>>>>>>> Stashed changes
+=======
+            m_socket->async_connect(m_endpoint, m_io_strand.wrap(boost::bind(&EthStratumClient::connect_handler, this,
+                                boost::placeholders::_1)));
+>>>>>>> Stashed changes
 =======
             m_socket->async_connect(m_endpoint, m_io_strand.wrap(boost::bind(&EthStratumClient::connect_handler, this,
                                 boost::placeholders::_1)));
