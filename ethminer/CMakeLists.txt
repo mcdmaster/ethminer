@@ -2,7 +2,8 @@ cmake_policy(SET CMP0015 NEW)
 
 aux_source_directory(. SRC_LIST)
 
-include_directories(BEFORE ..)
+# target_include_directories("${CMAKE_SOURCE_DIR}"  "${BUILD_OPENSSL}/include")
+include_directories(BEFORE ..  ${OPENSSL_INCLUDE_DIR})
 
 set(EXECUTABLE ethminer)
 
@@ -16,7 +17,7 @@ endif()
 hunter_add_package(CLI11)
 find_package(CLI11 CONFIG REQUIRED)
 
-target_link_libraries(ethminer PRIVATE ethcore poolprotocols devcore ethminer-buildinfo CLI11::CLI11 Boost::system Boost::thread)
+target_link_libraries(ethminer PRIVATE ethcore poolprotocols devcore ethminer-buildinfo CLI11::CLI11 ${Boost_LIBRARY_DIR_RELEASE} ${OPENSSL_CRYPTO_LIBRARY} ${OPENSSL_SSL_LIBRARY})
 
 if(ETHDBUS)
 	find_package(PkgConfig)

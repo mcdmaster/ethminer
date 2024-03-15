@@ -27,6 +27,7 @@
 #include <array>
 #include <cstdint>
 #include <random>
+#include <boost/multiprecision/number.hpp>
 
 #include "CommonData.h"
 
@@ -213,7 +214,10 @@ public:
     std::string abridged() const { return toHex(ref().cropped(0, 4)) + k_ellipsis; }
 
     /// @returns the hash as a user-readable hex string.
-    std::string hex(HexPrefix _prefix = HexPrefix::DontAdd) const { return toHex(ref(), 2, _prefix); }
+    std::string hex(HexPrefix _prefix = HexPrefix::DontAdd) const
+    {
+        return toHex(ref<dev::u256>(), 2, _prefix);
+    }
 
     /// @returns a mutable byte vector_ref to the object's data.
     bytesRef ref() { return bytesRef(m_data.data(), N); }

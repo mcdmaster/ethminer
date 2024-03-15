@@ -1,8 +1,7 @@
 #include "ApiServer.h"
 
-#include <ethminer/buildinfo.h>
-
-#include <libethcore/Farm.h>
+#include "ethminer/buildinfo.h"
+#include "libethcore/Farm.h"
 
 #ifndef HOST_NAME_MAX
 #define HOST_NAME_MAX 255
@@ -15,9 +14,10 @@
 #define HTTP_ROW1_COLOR "#ffffff"
 #define HTTP_ROWRED_COLOR "#f46542"
 
-
+namespace std
+{
 /* helper functions getting values from a JSON request */
-static bool getRequestValue(const char* membername, bool& refValue, Json::Value& jRequest,
+static bool getRequestValue(const char* membername, bool& refValue, json::value jRequest,
     bool optional, Json::Value& jResponse)
 {
     if (!jRequest.isMember(membername))
@@ -217,13 +217,14 @@ static bool parseRequestId(Json::Value& jRequest, Json::Value& jResponse)
 
     // id has invalid type
     jResponse[membername] = Json::nullValue;
-    jResponse["error"]["code"] = -32600;
-    jResponse["error"]["message"] = "Invalid Request (id has invalid type)";
+    jResponse[error][code] = -32600;
+    jResponse[error][message] = "Invalid Request (id has invalid type)";
+    
     return false;
-}
+};
 
-ApiServer::ApiServer(string address, int portnum, string password)
-  : m_password(std::move(password)),
+ApiServer(std::string address, int portnum, std::string password) :
+    m_password(std::move(password)),
     m_address(address),
     m_acceptor(g_io_service),
     m_io_strand(g_io_service)
@@ -1279,3 +1280,4 @@ Json::Value ApiConnection::getMinerStatDetail()
 
     return jRes;
 }
+};  // namespace std

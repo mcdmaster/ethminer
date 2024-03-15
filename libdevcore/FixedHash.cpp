@@ -19,8 +19,6 @@
  * @date 2014
  */
 
-#include <boost/algorithm/string.hpp>
-
 #include "FixedHash.h"
 
 using namespace std;

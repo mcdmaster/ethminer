@@ -23,16 +23,16 @@
 
 #pragma once
 
+#include "Common.h"
+
 #include <algorithm>
 #include <cstring>
 #include <string>
 #include <type_traits>
 #include <unordered_set>
 #include <vector>
-
-#include <boost/algorithm/string.hpp>
-
-#include "Common.h"
+#include <chrono>
+#include <iomanip>
 
 namespace dev
 {
@@ -41,13 +41,13 @@ namespace dev
 enum class WhenError
 {
     DontThrow = 0,
-    Throw = 1,
+    Throw = 1
 };
 
 enum class HexPrefix
 {
     DontAdd = 0,
-    Add = 1,
+    Add = 1
 };
 
 enum class ScaleSuffix
@@ -61,14 +61,17 @@ enum class ScaleSuffix
 /// represent a byte.
 /// @example toHex("A\x69") == "4169"
 template <class T>
-std::string toHex(T const& _data, int _w = 2, HexPrefix _prefix = HexPrefix::DontAdd)
+std::string toHex(const T* _data, int _w = 2, HexPrefix _prefix = HexPrefix::DontAdd)
 {
-    std::ostringstream ret;
+    std::ostringstream _ret;
     unsigned ii = 0;
-    for (auto i : _data)
-        ret << std::hex << std::setfill('0') << std::setw(ii++ ? 2 : _w)
-            << (int)(typename std::make_unsigned<decltype(i)>::type)i;
-    return (_prefix == HexPrefix::Add) ? "0x" + ret.str() : ret.str();
+    for (T i : _data)
+    {
+        _ret << (_prefix == HexPrefix::Add ? "0x00" : "") << std::hex << std::setfill('0')
+             << std::setw(ii++ ? 2 : _w) 
+             << reinterpret_cast<(typename std::make_unsigned<T>::type) | int>(i);
+    }
+    return _ret.str();
 }
 
 /// Converts a (printable) ASCII hex character into the correspnding integer value.
@@ -161,8 +164,7 @@ inline bytes toCompactBigEndian(T _val, unsigned _min = 0)
 /// Convenience function for conversion of a u256 to hex
 inline std::string toHex(u256 val, HexPrefix prefix = HexPrefix::DontAdd)
 {
-    std::string str = toHex(toBigEndian(val));
-    return (prefix == HexPrefix::Add) ? "0x" + str : str;
+    std::string str = (prefix == HexPrefix::Add) ? "0x00" : "" + dev::toHex((dev::u256)toBigEndian(val));
 }
 
 inline std::string toHex(uint64_t _n, HexPrefix _prefix = HexPrefix::DontAdd, int _bytes = 16)
@@ -170,42 +172,54 @@ inline std::string toHex(uint64_t _n, HexPrefix _prefix = HexPrefix::DontAdd, in
     // sizeof returns the number of bytes (not the number of bits)
     // thus if CHAR_BIT != 8 sizeof(uint64_t) will return != 8
     // Use fixed constant multiplier of 16
-    std::ostringstream ret;
-    ret << std::hex << std::setfill('0') << std::setw(_bytes) << _n;
-    return (_prefix == HexPrefix::Add) ? "0x" + ret.str() : ret.str();
+    std::ostringstream _ret;
+    _ret << (_prefix == HexPrefix::Add ? "0x0" : "")
+        << std::hex << std::setfill('0') << std::setw(_bytes) << _n;
+    char* str;
+    _ret.write(str, _ret.str().length());
+    return str;
 }
 
-inline std::string toHex(uint32_t _n, HexPrefix _prefix = HexPrefix::DontAdd, int _bytes = 8)
+inline std::string toHex(
+    uint32_t _n, HexPrefix _prefix = HexPrefix::DontAdd, int _bytes = 8)
 {
     // sizeof returns the number of bytes (not the number of bits)
     // thus if CHAR_BIT != 8 sizeof(uint64_t) will return != 4
     // Use fixed constant multiplier of 8
-    std::ostringstream ret;
-    ret << std::hex << std::setfill('0') << std::setw(_bytes) << _n;
-    return (_prefix == HexPrefix::Add) ? "0x" + ret.str() : ret.str();
+    std::ostringstream _ret;
+    _ret << (_prefix == HexPrefix::Add ? "0x0" : "") << std::hex
+            << std::setfill('0')
+            << std::setw(_bytes)
+            << _n;
+    char* str;
+    _ret.write(str, _ret.str().length());
+    return str;
 }
 
-inline std::string toCompactHex(uint64_t _n, HexPrefix _prefix = HexPrefix::DontAdd)
+inline std::string toCompactHex(uint64_t &_n, HexPrefix _prefix = HexPrefix::DontAdd)
 {
-    std::ostringstream ret;
-    ret << std::hex << _n;
-    return (_prefix == HexPrefix::Add) ? "0x" + ret.str() : ret.str();
+    std::ostringstream _ret;
+    _ret << (_prefix == HexPrefix::Add ? "0x0" : "") << std::hex << _n;
+    char* str;
+    _ret.write(str, _ret.str().length());
+    return str;
 }
 
 inline std::string toCompactHex(uint32_t _n, HexPrefix _prefix = HexPrefix::DontAdd)
 {
-    std::ostringstream ret;
-    ret << std::hex << _n;
-    return (_prefix == HexPrefix::Add) ? "0x" + ret.str() : ret.str();
+    std::ostringstream _ret;
+    _ret << (_prefix == HexPrefix::Add ? "0x0" : "")
+        << std::hex << _n;
+    char* str;
+    _ret.write(str, _ret.str().length());
+    return str;
 }
-
-
 
 // Algorithms for string and string-like collections.
 
 /// Escapes a string into the C-string representation.
 /// @p _all if true will escape all characters, not just the unprintable ones.
-std::string escaped(std::string const& _s, bool _all = true);
+std::string escaped(const std::string *_s, bool _all = true);
 
 // General datatype convenience functions.
 
@@ -235,14 +249,15 @@ double getHashesToTarget(std::string _target);
 
 /// Generic function to scale a value
 std::string getScaledSize(double _value, double _divisor, int _precision, std::string _sizes[],
-    size_t _numsizes, ScaleSuffix _suffix = ScaleSuffix::Add);
+    size_t _numsizes, ScaleSuffix _suffix = ScaleSuffix(ScaleSuffix::Add));
 
 /// Formats hashrate
-std::string getFormattedHashes(double _hr, ScaleSuffix _suffix = ScaleSuffix::Add, int _precision = 2);
+std::string getFormattedHashes(
+    double _hr, ScaleSuffix _suffix = ScaleSuffix(ScaleSuffix::Add), int _precision = 2);
 
 /// Formats hashrate
 std::string getFormattedMemory(
-    double _mem, ScaleSuffix _suffix = ScaleSuffix::Add, int _precision = 2);
+    double _mem, ScaleSuffix _suffix = ScaleSuffix(ScaleSuffix::Add), int _precision = 2);
 
 /// Adjust string to a fixed length filling chars to the Left
 std::string padLeft(std::string _value, size_t _length, char _fillChar);

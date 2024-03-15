@@ -29,6 +29,7 @@
 #if ETH_ETHASHCPU
 #include <libethash-cpu/CPUMiner.h>
 #endif
+#include <ethash/global_context.hpp>
 
 namespace dev
 {
@@ -382,7 +383,7 @@ void Farm::restart()
  */
 void Farm::restart_async()
 {
-    m_io_strand.get_io_service().post(m_io_strand.wrap(boost::bind(&Farm::restart, this)));
+    m_io_strand.post(m_io_strand.wrap(boost::bind(&Farm::restart, this)));
 }
 
 /**

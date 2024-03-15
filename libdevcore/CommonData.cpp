@@ -15,10 +15,11 @@
     along with ethminer.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <cstdlib>
-
 #include "CommonData.h"
 #include "Exceptions.h"
+
+#include <cstdlib>
+#include <boost/algorithm/string.hpp>
 
 using namespace std;
 using namespace dev;

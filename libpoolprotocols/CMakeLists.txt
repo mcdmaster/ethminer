@@ -1,3 +1,6 @@
+cmake_minimum_required(VERSION 3.24)
+project(poolprotocols)
+
 set(SOURCES
 	PoolURI.cpp PoolURI.h
 	PoolClient.h
@@ -7,9 +10,6 @@ set(SOURCES
 	getwork/EthGetworkClient.h getwork/EthGetworkClient.cpp
 )
 
-hunter_add_package(OpenSSL)
-find_package(OpenSSL REQUIRED)
-
 add_library(poolprotocols ${SOURCES})
-target_link_libraries(poolprotocols PRIVATE devcore ethminer-buildinfo ethash::ethash Boost::system jsoncpp_static OpenSSL::SSL OpenSSL::Crypto)
-target_include_directories(poolprotocols PRIVATE ..)
+target_link_libraries(poolprotocols PRIVATE devcore ethminer-buildinfo ethash::ethash  ${Boost_LIBRARY_DIR_RELEASE} jsoncpp_static ${OPENSSL_CRYPTO_LIBRARY} ${OPENSSL_SSL_LIBRARY})
+include_directories(AFTER .. ${OPENSSL_INCLUDE_DIR})

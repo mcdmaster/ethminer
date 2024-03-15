@@ -1,8 +1,8 @@
-#include <ethminer/buildinfo.h>
-#include <libdevcore/Log.h>
-#include <ethash/ethash.hpp>
-
 #include "EthStratumClient.h"
+
+#include <libdevcore/Log.h>
+#include <ethminer/buildinfo.h>
+#include <ethash/ethash.hpp>
 
 #ifdef _WIN32
 // Needed for certificates validation on TLS connections
@@ -65,6 +65,7 @@ void EthStratumClient::init_socket()
             return;
         }
 
+    #if defined(OPENSSL_FOUND)
         X509_STORE* store = X509_STORE_new();
         PCCERT_CONTEXT pContext = nullptr;
         while ((pContext = CertEnumCertificatesInStore(hStore, pContext)) != nullptr)
@@ -77,11 +78,10 @@ void EthStratumClient::init_socket()
                 X509_free(x509);
             }
         }
-
         CertFreeCertificateContext(pContext);
         CertCloseStore(hStore, 0);
-
         SSL_CTX_set_cert_store(ctx.native_handle(), store);
+    #endif
 #else
         char* certPath = getenv("SSL_CERT_FILE");
         try
@@ -344,12 +344,12 @@ void EthStratumClient::start_connect()
         if (m_conn->SecLevel() != SecureLevel::NONE)
         {
             m_securesocket->lowest_layer().async_connect(m_endpoint,
-                m_io_strand.wrap(boost::bind(&EthStratumClient::connect_handler, this, _1)));
+                m_io_strand.wrap(boost::bind(&EthStratumClient::connect_handler, this, boost::placeholders::_1)));
         }
         else
         {
             m_socket->async_connect(m_endpoint,
-                m_io_strand.wrap(boost::bind(&EthStratumClient::connect_handler, this, _1)));
+                m_io_strand.wrap(boost::bind(&EthStratumClient::connect_handler, this, boost::placeholders::_1)));
         }
     }
     else
@@ -1769,8 +1769,11 @@ void EthStratumClient::onRecvSocketDataCompleted(
                 m_conn->MarkUnrecoverable();
             }
 
-            if ((ec.category() == boost::asio::error::get_ssl_category()) &&
-                (ERR_GET_REASON(ec.value()) == SSL_RECEIVED_SHUTDOWN))
+            if (ec.category() == boost::asio::error::get_ssl_category() 
+            #if defined(OpemSSL)   
+                && ERR_GET_REASON(ec.value()) == SSL_RECEIVED_SHUTDOWN)
+            #endif
+            )
             {
                 cnote << "SSL Stream remotely closed by " << m_conn->Host();
             }
@@ -1841,8 +1844,11 @@ void EthStratumClient::onSendSocketDataCompleted(const boost::system::error_code
         m_txQueue.consume_all([](std::string* l) { delete l; });
         m_txPending.store(false, std::memory_order_relaxed);
 
-        if ((ec.category() == boost::asio::error::get_ssl_category()) &&
-            (SSL_R_PROTOCOL_IS_SHUTDOWN == ERR_GET_REASON(ec.value())))
+        if (ec.category() == boost::asio::error::get_ssl_category()
+          #if defined(OpeSSL)
+            && SSL_R_PROTOCOL_IS_SHUTDOWN == ERR_GET_REASON(ec.value())
+          #endif
+        )
         {
             cnote << "SSL Stream error : " << ec.message();
             m_io_service.post(m_io_strand.wrap(boost::bind(&EthStratumClient::disconnect, this)));

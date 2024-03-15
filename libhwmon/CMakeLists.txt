@@ -13,7 +13,7 @@ if (UNIX)
 endif ()
 
 target_link_libraries(hwmon ${HWMON_LINK_LIBRARIES})
-target_include_directories(hwmon PRIVATE ..)
+target_include_directories(hwmon PRIVATE ..  ${Boost_INCLUDE_DIR})
 
 if (ETHASHCUDA)
 	find_package(CUDA REQUIRED)

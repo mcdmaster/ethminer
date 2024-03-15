@@ -5,3 +5,12 @@
 	path = cmake/cable
 	url = https://github.com/ethereum/cable
 	branch = master
+[submodule "cmake/openssl-cmake"]
+	path = cmake/openssl-cmake
+	url = https://github.com/viaduck/openssl-cmake
+[submodule "libpoolprotocols/openssl-cmake"]
+	path = libpoolprotocols/openssl-cmake
+	url = https://github.com/viaduck/openssl-cmake
+[submodule "openssl-cmake"]
+	path = openssl-cmake
+	url = https://github.com/viaduck/openssl-cmake

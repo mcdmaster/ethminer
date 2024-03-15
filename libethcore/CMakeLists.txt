@@ -4,7 +4,7 @@ set(SOURCES
 	Miner.h Miner.cpp
 )
 
-include_directories(BEFORE ..)
+include_directories(BEFORE ..  ${Boost_INCLUDE_DIR})
 
 add_library(ethcore ${SOURCES})
 target_link_libraries(ethcore PUBLIC devcore ethash::ethash PRIVATE hwmon)
