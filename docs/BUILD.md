@@ -1,5 +1,6 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 # Building from source
 
 ## Table of Contents
@@ -175,6 +176,8 @@ to the configuration options.
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 # Building from source
 
 ## Table of Contents
@@ -332,6 +335,9 @@ to the configuration options.
 [CMake Build Tool Mode]: https://cmake.org/cmake/help/latest/manual/cmake.1.html#build-tool-mode
 [Hunter]: https://docs.hunter.sh/
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

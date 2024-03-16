@@ -19,29 +19,14 @@ cable_configure_toolchain(DEFAULT cxx11)
 set(HUNTER_CONFIGURATION_TYPES Release CACHE STRING "Build type of Hunter packages")
 set(HUNTER_JOBS_NUMBER 6 CACHE STRING "Number of parallel builds used by Hunter")
 HunterGate(
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-    URL "https://github.com/cpp-pm/hunter/archive/v0.25.0.tar.gz"
-    SHA1 "a1296b351dbfaf036c92d85c1bdb461f615849fa"
-=======
-    URL https://github.com/cpp-pm/hunter/archive/v0.24.3.tar.gz
-    SHA1 10738b59e539818a01090e64c2d09896247530c7
->>>>>>> Stashed changes
-=======
-    URL https://github.com/cpp-pm/hunter/archive/v0.24.3.tar.gz
-    SHA1 10738b59e539818a01090e64c2d09896247530c7
->>>>>>> Stashed changes
-=======
-    URL https://github.com/cpp-pm/hunter/archive/v0.24.3.tar.gz
-    SHA1 10738b59e539818a01090e64c2d09896247530c7
->>>>>>> Stashed changes
+    URL "https://github.com/cpp-pm/hunter/archive/v0.25.5.tar.gz"
+    SHA1 "a20151e4c0740ee7d0f9994476856d813cdead29"
     LOCAL
 )
 
-cable_set_build_type(DEFAULT Release CONFIGURATION_TYPES Release RelWithDebInfo)
 project(ethminer)
 set(PROJECT_VERSION 0.19.0)
+cable_set_build_type(DEFAULT Release CONFIGURATION_TYPES Release RelWithDebInfo)
 
 option(ETHASHCL "Build with OpenCL mining" ON)
 option(ETHASHCUDA "Build with CUDA mining" ON)
@@ -80,9 +65,6 @@ function(configureProject)
     endif()
 endfunction()
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 set(Boost_USE_STATIC_LIBS        ON)  # only find static libs
 set(Boost_USE_DEBUG_LIBS        OFF)  # ignore debug libs and
 set(Boost_USE_RELEASE_LIBS       ON)  # only find release libs
@@ -90,34 +72,16 @@ set(Boost_USE_MULTITHREADED      ON)
 set(Boost_USE_STATIC_RUNTIME    OFF)
 set(Boost_NO_BOOST_CMAKE         ON)
 hunter_add_package(Boost)
-find_package(Boost REQUIRED)
-include_directories(${Boost_INCLUDE_DIRS})
+find_package(Boost.Build REQUIRED)
+find_package(Boost 1.83.0 CONFIG REQUIRED)
+INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
+LINK_DIRECTORIES(${Boost_LIBRARY_DIR})
 
 hunter_add_package(jsoncpp)
 find_package(jsoncpp REQUIRED)
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-find_package(PkgConfig)
-hunter_add_package(Boost COMPONENTS filesystem thread)
-find_package(Boost CONFIG REQUIRED COMPONENTS filesystem thread)
-set(CMAKE_THREAD_LIBS_INIT Boost::thread)
-find_package(Threads REQUIRED)
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 
 hunter_add_package(ethash)
 find_package(ethash REQUIRED)
-
-hunter_add_package(OpenSSL)
-find_package(OpenSSL REQUIRED)
 
 configureProject()
 

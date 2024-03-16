@@ -1,5 +1,6 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 # ethminer
 
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg)](https://github.com/RichardLitt/standard-readme)
@@ -192,6 +193,8 @@ You have to upgrade your Nvidia drivers. On Linux, install `nvidia-396` package 
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 # ethminer
 
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg)](https://github.com/RichardLitt/standard-readme)
@@ -382,6 +385,9 @@ You have to upgrade your Nvidia drivers. On Linux, install `nvidia-396` package 
 [Releases]: https://github.com/ethereum-mining/ethminer/releases
 [Travis CI]: https://travis-ci.org/ethereum-mining/ethminer
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

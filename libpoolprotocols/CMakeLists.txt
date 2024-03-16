@@ -1,20 +1,5 @@
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 cmake_minimum_required(VERSION 3.24)
 project(poolprotocols)
-=======
-set(CMAK_C_COMPILER C:/Progra~1/NVIDIA~2/CUDA/v11.7/bin/nvcc.exe)
-set(CMAK_CXX_COMPILER C:/Progra~1/NVIDIA~2/CUDA/v11.7/bin/nvcc.exe)
->>>>>>> Stashed changes
-=======
-set(CMAK_C_COMPILER C:/Progra~1/NVIDIA~2/CUDA/v11.7/bin/nvcc.exe)
-set(CMAK_CXX_COMPILER C:/Progra~1/NVIDIA~2/CUDA/v11.7/bin/nvcc.exe)
->>>>>>> Stashed changes
-=======
-set(CMAK_C_COMPILER C:/Progra~1/NVIDIA~2/CUDA/v11.7/bin/nvcc.exe)
-set(CMAK_CXX_COMPILER C:/Progra~1/NVIDIA~2/CUDA/v11.7/bin/nvcc.exe)
->>>>>>> Stashed changes
 
 set(SOURCES
 	PoolURI.cpp PoolURI.h
@@ -26,36 +11,18 @@ set(SOURCES
 	C:/msys64/ucrt64/include/limits.h
 )
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 add_library(poolprotocols ${SOURCES})
-target_link_libraries(poolprotocols PRIVATE devcore ethminer-buildinfo ethash::ethash  ${Boost_LIBRARY_DIR_RELEASE} jsoncpp_static ${OPENSSL_CRYPTO_LIBRARY} ${OPENSSL_SSL_LIBRARY})
-include_directories(AFTER .. ${OPENSSL_INCLUDE_DIR})
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-#hunter_add_package(OpenSSL)
-set(OPENSSL_ROOT_DIR C:/msys64/usr/local)
-set(OPENSSL_INCLUDE_DIR C:/msys64/usr/local/include)
-set(OPENSSL_LIBRARIES C:/msys64/usr/local/lib)
+hunter_add_package(OpenSSL)
+find_package(OpenSSL REQUIRED)
 
-add_library(poolprotocols ${SOURCES})
-target_link_directories(poolprotocols
-PRIVATE
-	${CMAKE_BINARY_DIR}/../lib
-)
 target_link_libraries(poolprotocols
 PRIVATE
 	devcore
 	ethminer-buildinfo
-	# C:/msys64/usr/lib/libjsoncpp.a
-	C:/msys64/usr/local/lib/ethash.lib 
-	C:/msys64/usr/local/lib/ethash-global-context.lib 
-	C:/msys64/usr/local/lib/libssl.a
-	C:/msys64/usr/local/lib/libcrypto.a
+	jsoncpp_static
+	ethash::ethash
+	OpenSSL:ssl
+	OpenSSL:crypto
 	crypt32.lib
 )
 target_include_directories(poolprotocols
@@ -70,10 +37,3 @@ PRIVATE
 	C:/Progra~1/NVIDIA~2/CUDA/v11.7/include
 	${CMAKE_BINARY_DIR}/../
 )
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
