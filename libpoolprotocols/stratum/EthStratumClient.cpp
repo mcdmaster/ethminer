@@ -24,15 +24,11 @@ EthStratumClient::EthStratumClient(int worktimeout, int responsetimeout)
     m_resolver(g_io_service),
     m_endpoints()
 {
-    [m_jSwBuilder](string, string) settings { return "indentation", ""; };
-
     // Initialize workloop_timer to infinite wait
     m_workloop_timer.expires_at(boost::posix_time::pos_infin);
     m_workloop_timer.async_wait(m_io_strand.wrap(boost::bind(
         &EthStratumClient::workloop_timer_elapsed, this, boost::asio::placeholders::error)));
     clear_response_pleas();
-}
-
 
 void EthStratumClient::init_socket()
 {

@@ -98,7 +98,7 @@ DEV_INLINE uint64_t MAKE_ULONGLONG(uint32_t LO, uint32_t HI)
     return result;
 }
 
-// Endian Drehung für 32 Bit Typen
+// Endian Drehung fï¿½r 32 Bit Typen
 #ifdef __CUDA_ARCH__
 DEV_INLINE uint32_t cuda_swab32(const uint32_t x)
 {

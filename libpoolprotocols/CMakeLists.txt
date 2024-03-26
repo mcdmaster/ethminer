@@ -12,28 +12,28 @@ set(SOURCES
 )
 
 add_library(poolprotocols ${SOURCES})
-hunter_add_package(OpenSSL)
+
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED Threads::Threads)
+LINK_LIBRARIES(${CMAKE_THREAD_LIBS_INIT})
+
 find_package(OpenSSL REQUIRED)
+
+find_package(CUDA REQUIRED)
 
 target_link_libraries(poolprotocols
 PRIVATE
 	devcore
 	ethminer-buildinfo
-	jsoncpp_static
-	ethash::ethash
-	OpenSSL:ssl
-	OpenSSL:crypto
-	crypt32.lib
 )
 target_include_directories(poolprotocols
-PUBLIC
-	C:/progra~2/wi3cf2~1/10/Include/10.0.22621.0/um
+PUBLIC $ENV{WINDOWSSDK_INCLUDEPATH}
 PRIVATE 
 	${CMAKE_BINARY_DIR}
 	${OPENSSL_INCLUDE_DIR}
 	C:/msys64/ucrt64/include/ssp
 	# C:/msys64/usr/include/json
 	C:/msys64/usr/include/ethash
-	C:/Progra~1/NVIDIA~2/CUDA/v11.7/include
+	C:/Progra~1/NVIDIA~2/CUDA/v12.3/include
 	${CMAKE_BINARY_DIR}/../
 )

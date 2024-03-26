@@ -2,30 +2,41 @@ set(CMP0074 NEW)
 set(CMP0079 NEW)
 set(CMP0093 NEW)
 set(CMP0135 NEW)
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.14)
 
-set(DOWNLOAD_EXTRACT_TIMESTAMP true)
-include(cmake/cable/bootstrap.cmake)
-
-include(CableBuildInfo)
-include(CableBuildType)
-include(CableToolchains)
-include(HunterGate)
-
-include(defaults/HunterCacheServers)
-
-cable_configure_toolchain(DEFAULT cxx11)
+set(DOWNLOAD_EXTRACT_TIMESTAMP ON)
+set(CABLE_ROOT ${CMAKE_BINARY_DIR}/../cmake/cable/)
+include(${CABLE_ROOT}bootstrap.cmake)
+include(${CABLE_ROOT}CableBuildInfo.cmake)
+include(${CABLE_ROOT}CableBuildType.cmake)
+include(${CABLE_ROOT}CableToolchains.cmake)
+include(${CABLE_ROOT}defaults/HunterCacheServers.cmake)
 
 set(HUNTER_CONFIGURATION_TYPES Release CACHE STRING "Build type of Hunter packages")
 set(HUNTER_JOBS_NUMBER 6 CACHE STRING "Number of parallel builds used by Hunter")
-HunterGate(
-    URL "https://github.com/cpp-pm/hunter/archive/v0.25.5.tar.gz"
-    SHA1 "a20151e4c0740ee7d0f9994476856d813cdead29"
-    LOCAL
-)
+
+include(FetchContent)
+cable_configure_toolchain(DEFAULT cxx11)
+FetchContent_Declare(SetupHunter GIT_REPOSITORY https://github.com/cpp-pm/gate)
+
+set(HUNTER_CURL_VERSION 7.74.0-p2)
+list(APPEND HUNTER_PACKAGES CURL)
+set(HUNTER_Boost_VERSION 1.81.0)
+list(APPEND HUNTER_PACKAGES Boost)
+set(HUNTER_CLI11_VERSION 1.9.1)
+list(APPEND HUNTER_PACKAGES CLI11)
+set(HUNTER_ethash_VERSION 1.0.0)
+list(APPEND HUNTER_PACKAGES ethash)
+set(HUNTER_jsoncpp_VERSION 1.9.5-b1)
+list(APPEND HUNTER_PACKAGES jsoncpp)
+# set(HUNTER_Threads_VERSION 3.1)
+# list(APPEND HUNTER_PACKAGES Threads)
+set(HUNTER_OpenSSL_VERSION 3.0.8)
+list(APPEND HUNTER_PACKAGES OpenSSL)
+FetchContent_MakeAvailable(SetupHunter)
 
 project(ethminer)
-set(PROJECT_VERSION 0.19.0)
+set(PROJECT_VERSION 0.19.10)
 cable_set_build_type(DEFAULT Release CONFIGURATION_TYPES Release RelWithDebInfo)
 
 option(ETHASHCL "Build with OpenCL mining" ON)
@@ -35,7 +46,7 @@ option(ETHDBUS "Build with D-Bus support" OFF)
 option(APICORE "Build with API Server support" ON)
 option(BINKERN "Install AMD binary kernels" ON)
 option(DEVBUILD "Log developer metrics" OFF)
-option(USE_SYS_OPENCL "Build with system OpenCL" OFF)
+option(USE_SYS_OPENCL "Build with system OpenCL" ON)
 
 # propagates CMake configuration options to the compiler
 function(configureProject)
@@ -65,22 +76,17 @@ function(configureProject)
     endif()
 endfunction()
 
-set(Boost_USE_STATIC_LIBS        ON)  # only find static libs
-set(Boost_USE_DEBUG_LIBS        OFF)  # ignore debug libs and
-set(Boost_USE_RELEASE_LIBS       ON)  # only find release libs
-set(Boost_USE_MULTITHREADED      ON)
-set(Boost_USE_STATIC_RUNTIME    OFF)
-set(Boost_NO_BOOST_CMAKE         ON)
-hunter_add_package(Boost)
-find_package(Boost.Build REQUIRED)
-find_package(Boost 1.83.0 CONFIG REQUIRED)
+find_program(perl C:/Strawberry/perl/bin/perl5.38.2.exe)
+
+find_package(Boost CONFIG REQUIRED)
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
 LINK_DIRECTORIES(${Boost_LIBRARY_DIR})
 
-hunter_add_package(jsoncpp)
-find_package(jsoncpp REQUIRED)
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED Threads::Threads)
+link_libraries(${CMAKE_THREAD_LIBS_INIT})
 
-hunter_add_package(ethash)
+find_package(jsoncpp REQUIRED)
 find_package(ethash REQUIRED)
 
 configureProject()

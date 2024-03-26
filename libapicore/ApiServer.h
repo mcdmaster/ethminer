@@ -1,16 +1,12 @@
 #pragma once
 
-#ifndef _GCC_LIMITS_H_
-#define _GCC_LIMITS_H_
-#endif
-#include <limits.h>
-
 #include <regex>
 
 #include <boost/asio.hpp>
-#include <boost/bind/bind.hpp>
+#include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
-#include <boost/json.hpp>
+
+#include <json/json.h>
 
 #include <libethcore/Farm.h>
 #include <libethcore/Miner.h>
@@ -25,14 +21,13 @@ using boost::asio::ip::tcp;
 class ApiConnection
 {
 public:
-
     ApiConnection(boost::asio::io_service::strand& _strand, int id, bool readonly, string password);
 
     ~ApiConnection() = default;
 
     void start();
 
-    boost::json::value getMinerStat1();
+    Json::Value getMinerStat1();
 
     using Disconnected = std::function<void(int const&)>;
     void onDisconnected(Disconnected const& _handler) { m_onDisconnected = _handler; }
@@ -43,17 +38,16 @@ public:
 
 private:
     void disconnect();
-    void processRequest(boost::json::value& jRequest, boost::json::value& jResponse);
+    void processRequest(Json::Value& jRequest, Json::Value& jResponse);
     void recvSocketData();
     void onRecvSocketDataCompleted(
         const boost::system::error_code& ec, std::size_t bytes_transferred);
-    void sendSocketData(boost::json::value const& jReq, bool _disconnect = false);
+    void sendSocketData(Json::Value const& jReq, bool _disconnect = false);
     void sendSocketData(std::string const& _s, bool _disconnect = false);
     void onSendSocketDataCompleted(const boost::system::error_code& ec, bool _disconnect = false);
 
-    boost::json::value getMinerStatDetail();
-    boost::json::value getMinerStatDetailPerMiner(
-        const TelemetryType& _t, std::shared_ptr<Miner> _miner);
+    Json::Value getMinerStatDetail();
+    Json::Value getMinerStatDetailPerMiner(const TelemetryType& _t, std::shared_ptr<Miner> _miner);
 
     std::string getHttpMinerStatDetail();
 
@@ -65,7 +59,7 @@ private:
     boost::asio::io_service::strand& m_io_strand;
     boost::asio::streambuf m_sendBuffer;
     boost::asio::streambuf m_recvBuffer;
-    boost::json::serializer m_jSwBuilder;
+    Json::StreamWriterBuilder m_jSwBuilder;
 
     std::string m_message;  // The internal message string buffer
 

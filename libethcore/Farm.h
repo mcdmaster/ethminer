@@ -20,8 +20,9 @@
 #include <atomic>
 #include <list>
 #include <thread>
+#include <map>
 
-#include <boost/asio.hpp>
+#include <boost/asio/io_service_strand.hpp>
 #include <boost/bind/bind.hpp>
 #include <boost/dll.hpp>
 #include <boost/process.hpp>
@@ -41,12 +42,12 @@
 #include <libhwmon/wrapadl.h>
 #endif
 
-extern boost::asio::io_service g_io_service;
+extern boost::asio::io_context g_io_service;
 
-namespace dev
-{
-namespace eth
-{
+using namespace std;
+using namespace dev;
+using namespace eth;
+
 struct FarmSettings
 {
     unsigned dagLoadMode = 0;  // 0 = Parallel; 1 = Serialized
@@ -67,9 +68,8 @@ class Farm : public FarmFace
 public:
     unsigned tstart = 0, tstop = 0;
 
-    Farm(std::map<std::string, DeviceDescriptor>& _DevicesCollection,
-        FarmSettings _settings, CUSettings _CUSettings, CLSettings _CLSettings,
-        CPSettings _CPSettings);
+    Farm(std::map<string, DeviceDescriptor>& _DevicesCollection, FarmSettings _settings,
+        CUSettings _CUSettings, CLSettings _CLSettings, CPSettings _CPSettings);
 
     ~Farm();
 
@@ -226,15 +226,32 @@ public:
      * @brief Provides the description of segments each miner is working on
      * @return a JsonObject
      */
-    boost::json::value get_nonce_scrambler_json();
+    /**
+     * @brief Provides the description of segments each miner is working on
+     * @return a JsonObject
+     */
+    boost::json::value get_nonce_scrambler_json()
+    {
+        boost::json::value *jRes;
+
+        jRes
+        { ["start_nonce"], boost::json::value(toHex(m_nonce_scrambler, HexPrefix::Add))];
+            jRes
+            { ["device_width"], boost::json::value(m_nonce_segment_with{);
+
+                    return jRes;
+    };
 
     void setTStartTStop(unsigned tstart, unsigned tstop);
 
-    unsigned get_tstart() override { return m_Settings.tempStart; }
+    unsigned get_tstart() override {
+                    return m_Settings.tempStart; }
 
-    unsigned get_tstop() override { return m_Settings.tempStop; }
+    unsigned get_tstop() override {
+                    return m_Settings.tempStop; }
 
-    unsigned get_ergodicity() override { return m_Settings.ergodicity; }
+    unsigned get_ergodicity() override {
+                    return m_Settings.ergodicity; }
 
     /**
      * @brief Called from a Miner to note a WorkPackage has a solution.
@@ -304,7 +321,9 @@ private:
 
     static Farm* m_this;
     std::map<std::string, DeviceDescriptor>& m_DevicesCollection;
-};
-
-}  // namespace eth
-}  // namespace dev
+            };
+        }
+              ;
+            ;
+            ;
+        }

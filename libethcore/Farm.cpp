@@ -40,6 +40,7 @@ namespace fs = boost::filesystem;
 namespace fs = boost::filesystem;
 
 #include <boost/filesystem.hpp>
+#include <boost/container/detail/copy_move_algo.hpp>
 
 namespace fs = boost::filesystem;
 
@@ -474,20 +475,6 @@ SolutionAccountType Farm::getSolutions(unsigned _minerIdx)
     {
         return SolutionAccountType();
     }
-}
-
-/**
- * @brief Provides the description of segments each miner is working on
- * @return a JsonObject
- */
-boost::json::value Farm::get_nonce_scrambler_json()
-{
-    boost::json::value jRes[char* index];
-    jRes["start_nonce"] = toHex(m_nonce_scrambler, HexPrefix::Add);
-    jRes["device_width"] = m_nonce_segment_with;
-    jRes["device_count"] = (uint64_t)m_miners.size();
-
-    return jRes;
 }
 
 void Farm::setTStartTStop(unsigned tstart, unsigned tstop)
